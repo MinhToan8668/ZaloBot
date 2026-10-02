@@ -197,6 +197,12 @@ export function laGoiBot(text, tuGoi) {
 // 'a, b ,c' -> ['a','b','c']
 export const docDs = (chu) => String(chu ?? '').split(',').map((x) => x.trim()).filter(Boolean);
 
+// Số phút từ gioA đến gioB ('HH:MM'), ví dụ ('11:00','11:15') -> 15
+export function phutGiua(gioA, gioB) {
+  const phut = (g) => { const [h, m] = g.split(':').map(Number); return h * 60 + m; };
+  return phut(gioB) - phut(gioA);
+}
+
 // Giờ 'HH:MM' của cron có khớp mốc cấu hình không (cho phép cron chạy trễ vài phút).
 export function khopGio(gioCron, gioMoc, treToiDaPhut = 5) {
   const phut = (g) => { const [h, m] = g.split(':').map(Number); return h * 60 + m; };

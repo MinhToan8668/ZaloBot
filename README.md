@@ -9,7 +9,7 @@ Bot ngồi trong nhóm Zalo đặt cơm trưa của công ty, chạy hoàn toàn
   - **Đi ăn ngoài** (nhóm nói "đi ăn ngoài", "quán gần công ty"...): tra **Google Maps** quanh địa
     điểm công ty, đưa quán có thật kèm địa chỉ, món, giá, khoảng cách.
   Cả hai đều bám yêu cầu trong chat (tầm giá, khô/nước, chay...) và tránh lặp món đã chốt hôm qua, hôm kia.
-- 10:30 nhắc cả nhóm chọn món. **11:15 tự chốt**: món chính, danh sách từng người ăn gì
+- 10:30 nhắc cả nhóm chọn món, 11:00 nhắc "còn 15 phút". **11:15 tự chốt**: món chính, danh sách từng người ăn gì
   kèm ghi chú, ai không ăn, ai chưa rõ. Người đặt cơm chỉ cần nhìn tin này để gọi quán.
 - Chỉ chạy thứ Hai đến thứ Sáu (đổi được), mỗi ngày tự chốt đúng một lần.
 - Gemini lỗi hoặc chưa có key thì vẫn chốt, liệt kê tin nhắn cuối của từng người.
@@ -78,10 +78,12 @@ dừng, lần cron sau tiếp tục. Tin nhắn được trả lời trong vài 
 
 ## Đổi giờ nhắc / giờ chốt
 
-Cron của Cloudflare tính theo **UTC**, giờ Việt Nam trừ đi 7. Ví dụ muốn chốt 11:30:
+Cron của Cloudflare tính theo **UTC**, giờ Việt Nam trừ đi 7. Ví dụ muốn nhắc 10:30, nhắc lần 2 lúc 11:15, chốt 11:30:
 
 ```toml
-crons = ["* * * * *", "30 3 * * 1-5", "30 4 * * 1-5"]   # nhận tin; 10:30 và 11:30 VN
+crons = ["* * * * *", "30 3 * * 1-5", "15 4 * * 1-5", "30 4 * * 1-5"]
+GIO_NHAC = "10:30"
+GIO_NHAC_2 = "11:15"
 GIO_CHOT = "11:30"
 ```
 

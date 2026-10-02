@@ -7,11 +7,11 @@ compatibility_date = "2025-09-01"
 enabled = true
 
 # Cron 1: "* * * * *" mỗi phút hỏi Zalo có tin mới không (giữ nguyên, bot nhận tin nhờ dòng này).
-# Cron 2, 3: giờ nhắc và giờ chốt. Giờ cron là UTC, giờ Việt Nam = UTC + 7,
-#   nên 10:30 VN = 03:30 UTC, 11:15 VN = 04:15 UTC. Chỉ thứ Hai đến thứ Sáu (1-5).
-#   Đổi giờ ở đây thì đổi cả GIO_NHAC / GIO_CHOT bên dưới.
+# Cron 2, 3, 4: nhắc lần 1, nhắc lần 2 (sắp chốt), chốt. Giờ cron là UTC, giờ Việt Nam = UTC + 7:
+#   10:30 VN = "30 3", 11:00 VN = "0 4", 11:15 VN = "15 4". Chỉ thứ Hai đến thứ Sáu (1-5).
+#   Đổi giờ ở đây thì đổi cả GIO_NHAC / GIO_NHAC_2 / GIO_CHOT bên dưới cho khớp.
 [triggers]
-crons = ["* * * * *", "30 3 * * 1-5", "15 4 * * 1-5"]
+crons = ["* * * * *", "30 3 * * 1-5", "0 4 * * 1-5", "15 4 * * 1-5"]
 
 [[d1_databases]]
 binding = "DB"
@@ -26,6 +26,8 @@ GEMINI_MODEL = "gemini-flash-latest"
 TU_GOI = "bot,ngự trù"
 # Giờ Việt Nam, phải khớp với crons ở trên. Để GIO_NHAC = "" nếu không muốn nhắc.
 GIO_NHAC = "10:30"
+# Nhắc lần 2 "còn X phút nữa chốt". Để "" nếu không cần.
+GIO_NHAC_2 = "11:00"
 GIO_CHOT = "11:15"
 MUI_GIO = "Asia/Ho_Chi_Minh"
 # Mã nhóm nhận tin nhắc và tin chốt (gõ /id trong nhóm). Để trống: tự dùng mọi nhóm có người nhắn 7 ngày qua.

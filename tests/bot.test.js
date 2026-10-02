@@ -44,7 +44,7 @@ function tao(ai, env = {}) {
   const zalo = zaloGia();
   const kho = new KhoGia();
   let gio = T0;
-  const bot = new BotComTrua(docCauHinh({ GIO_NHAC: '10:30', ...env }), zalo, ai, kho, () => gio);
+  const bot = new BotComTrua(docCauHinh({ GIO_NHAC: '10:30', GIO_NHAC_2: '11:00', ...env }), zalo, ai, kho, () => gio);
   return { bot, zalo, kho, datGio: (ms) => { gio = ms; } };
 }
 
@@ -170,4 +170,13 @@ test('lệnh kèm tag bot trong nhóm vẫn chạy', async () => {
   const { bot, zalo } = tao(aiGia('{}'));
   await bot.xuLyUpdate(update('g1', '@Bot /id'));
   assert.ok(zalo.daGui.at(-1)[1].includes('Mã cuộc trò chuyện này: g1'));
+});
+
+test('11:00 nhắc còn 15 phút, chỉ một lần', async () => {
+  const { bot, zalo } = tao(aiGia('{}'));
+  await bot.xuLyUpdate(update('g1', 'ăn gì'));
+  await bot.chayHenGio('11:00');
+  await bot.chayHenGio('11:01');
+  const nhac = zalo.daGui.filter(([, t]) => t.includes('Còn 15 phút'));
+  assert.equal(nhac.length, 1);
 });

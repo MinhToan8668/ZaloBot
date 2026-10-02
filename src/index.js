@@ -35,6 +35,7 @@ export function docCauHinh(env) {
     muiGio: env.MUI_GIO || 'Asia/Ho_Chi_Minh',
     gioChot: env.GIO_CHOT || '11:15',
     gioNhac: env.GIO_NHAC || '',
+    gioNhac2: env.GIO_NHAC_2 || '',
     groupIds: chot.docDs(env.GROUP_IDS),
     adminIds: chot.docDs(env.ADMIN_IDS),
     tenBot,
@@ -222,13 +223,18 @@ export class BotComTrua {
   async chayHenGio(gioCron) {
     const ngay = this.homNay();
     const nhac = this.cfg.gioNhac && chot.khopGio(gioCron, this.cfg.gioNhac);
+    const nhac2 = this.cfg.gioNhac2 && chot.khopGio(gioCron, this.cfg.gioNhac2);
     const chotGio = chot.khopGio(gioCron, this.cfg.gioChot);
-    if (!nhac && !chotGio) { console.warn(`Cron chạy lúc ${gioCron} không khớp GIO_NHAC/GIO_CHOT`); return; }
+    if (!nhac && !nhac2 && !chotGio) { console.warn(`Cron chạy lúc ${gioCron} không khớp GIO_NHAC/GIO_NHAC_2/GIO_CHOT`); return; }
 
     for (const chatId of await this.nhomDich()) {
       try {
         if (nhac && await this.kho.gianhViec(chatId, ngay, 'da_nhac')) {
           await this.gui(chatId, `Trưa nay ăn gì mọi người ơi? 🍚 Nhắn món muốn ăn nha, ${this.cfg.gioChot} bot chốt.`);
+        }
+        if (nhac2 && await this.kho.gianhViec(chatId, ngay, 'nhac2')) {
+          const conPhut = chot.phutGiua(this.cfg.gioNhac2, this.cfg.gioChot);
+          await this.gui(chatId, `⏰ Còn ${conPhut} phút nữa (${this.cfg.gioChot}) bot chốt cơm. Ai chưa chọn món thì nhắn liền nha!`);
         }
         if (chotGio && await this.kho.gianhViec(chatId, ngay, 'da_chot')) {
           await this.chot(chatId);

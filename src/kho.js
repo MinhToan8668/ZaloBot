@@ -4,6 +4,7 @@
 const LUOC_DO_THEM = [
   'CREATE TABLE IF NOT EXISTS cai_dat (chat_id TEXT NOT NULL, khoa TEXT NOT NULL, gia_tri TEXT, PRIMARY KEY (chat_id, khoa))',
   'CREATE TABLE IF NOT EXISTS chot_ngay (chat_id TEXT NOT NULL, ngay TEXT NOT NULL, mon TEXT, quan TEXT, PRIMARY KEY (chat_id, ngay))',
+  'CREATE TABLE IF NOT EXISTS viec_ngay (chat_id TEXT NOT NULL, ngay TEXT NOT NULL, viec TEXT NOT NULL, PRIMARY KEY (chat_id, ngay, viec))',
 ];
 let daDamBao = false;
 
@@ -93,9 +94,15 @@ export class Kho {
     ).bind(chatId, ngay).run();
   }
 
-  // Giành quyền làm một việc (nhac/chot) trong ngày. Trả true đúng một lần, kể cả khi cron chạy trùng.
+  // Giành quyền làm một việc trong ngày. Trả true đúng một lần, kể cả khi cron chạy trùng.
+  // da_nhac/da_chot nằm trong bảng lich; việc khác (vd nhac2) ghi vào bảng viec_ngay.
   async gianhViec(chatId, ngay, viec) {
-    if (viec !== 'da_nhac' && viec !== 'da_chot') throw new Error(`Việc không hợp lệ: ${viec}`);
+    if (viec !== 'da_nhac' && viec !== 'da_chot') {
+      if (!/^[a-z0-9_]+$/.test(viec)) throw new Error(`Việc không hợp lệ: ${viec}`);
+      if ((await this.layLich(chatId, ngay)).nghi) return false;
+      const r = await this._db.prepare('INSERT OR IGNORE INTO viec_ngay (chat_id, ngay, viec) VALUES (?, ?, ?)').bind(chatId, ngay, viec).run();
+      return (r.meta?.changes ?? 0) > 0;
+    }
     const r = await this._db.prepare(
       `INSERT INTO lich (chat_id, ngay, ${viec}) VALUES (?, ?, 1)`
       + ` ON CONFLICT(chat_id, ngay) DO UPDATE SET ${viec} = 1 WHERE ${viec} = 0 AND nghi = 0`,
