@@ -104,3 +104,27 @@ test('dongDaAn gắn nhãn hôm qua / hôm kia', () => {
   const t = chot.dongDaAn([{ ngay: '2026-10-01', mon: 'Phở', quan: '' }, { ngay: '2026-09-30', mon: '', quan: 'Cơm Hoa Mai' }, { ngay: '2026-09-28', mon: '', quan: '' }], '2026-10-02');
   assert.equal(t, 'Hôm qua (01/10): Phở\nHôm kia (30/09): Cơm Hoa Mai');
 });
+
+test('boMarkdown dọn định dạng Gemini trả về', () => {
+  assert.equal(chot.boMarkdown('## Gợi ý\n\n1. **Cơm Tấm A** - 12 Lê Lợi\n* ngon\n\n\n```\nx\n```'), 'Gợi ý\n\n1. Cơm Tấm A - 12 Lê Lợi\n- ngon\n\nx');
+});
+
+test('Gemini banDo: hết quota Maps thì hỏi lại không kèm công cụ', async () => {
+  const { Gemini } = await import('../src/gemini.js');
+  const goi = [];
+  const fetchCu = globalThis.fetch;
+  globalThis.fetch = async (url, { body }) => {
+    const model = url.match(/models\/([^:]+):/)[1];
+    const coTools = Boolean(JSON.parse(body).tools);
+    goi.push(`${model}${coTools ? '+maps' : ''}`);
+    if (coTools) return new Response('{"error":"quota"}', { status: 429 });
+    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'tra loi thuong' }] } }] }), { status: 200 });
+  };
+  try {
+    const ai = new Gemini('k', 'gemini-flash-latest');
+    assert.equal(await ai.hoi('ht', 'nd', { banDo: true }), 'tra loi thuong');
+    assert.deepEqual(goi, ['gemini-flash-lite-latest+maps', 'gemini-3.5-flash-lite+maps', 'gemini-3.1-flash-lite+maps', 'gemini-flash-latest']);
+  } finally {
+    globalThis.fetch = fetchCu;
+  }
+});

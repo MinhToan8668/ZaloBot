@@ -154,8 +154,9 @@ export class BotComTrua {
     const noiDung = chot.noiDungGuiAI(tin, this.cfg.muiGio, this.cfg.quanQuen,
       `Tin nhắn mới nhất, của ${ten}: ${text}\nHãy trả lời tin này.`, boiCanh);
     try {
-      const cau = await this.ai.hoi(chot.heThongTroChuyen(this.cfg.tenBot, this.cfg.gioChot, boiCanh.diaDiem), noiDung);
-      await this.gui(chatId, cau);
+      const cau = await this.ai.hoi(chot.heThongTroChuyen(this.cfg.tenBot, this.cfg.gioChot, boiCanh.diaDiem), noiDung,
+        { banDo: Boolean(boiCanh.diaDiem) });
+      await this.gui(chatId, chot.boMarkdown(cau));
     } catch (e) {
       console.error('Gemini lỗi khi trả lời:', e.message);
     }

@@ -34,12 +34,8 @@ GROUP_IDS = ""
 ADMIN_IDS = ""
 # Địa chỉ công ty để bot gợi ý quán quanh đó (tên đường, quận, thành phố). Trong nhóm có thể đổi bằng /diachi
 DIA_DIEM = ""
-# Quán quen, mỗi quán một dòng, để bot gợi ý và chốt sát thực tế
-QUAN_QUEN = """
-Cơm tấm Bà Ba - cơm sườn, bì, chả (35-45k)
-Bún bò Huế O Xuân - bún bò, bún giò (40k)
-Cơm văn phòng Hoa Mai - 1 mặn 1 xào 1 canh (35k)
-"""
+# Tùy chọn: quán hay đặt mà Google Maps không có (ví dụ cô bán cơm trong hẻm), mỗi quán một dòng. Để trống cũng được.
+QUAN_QUEN = ""
 
 # Bí mật KHÔNG để ở đây. Đặt bằng: npx wrangler secret put ZALO_BOT_TOKEN
 #   ZALO_BOT_TOKEN, GEMINI_API_KEY, WEBHOOK_SECRET

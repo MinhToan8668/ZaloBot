@@ -19,13 +19,13 @@ Trả về đúng một JSON theo dạng:
 
 export function heThongTroChuyen(tenBot, gioChot, diaDiem = '') {
   const viTri = diaDiem
-    ? `- Nhóm đang ở: ${diaDiem}. Chỉ gợi ý món và quán trong bán kính khoảng 1-2 km quanh đó (đi bộ hoặc ship nhanh được).`
+    ? `- Nhóm đang ở: ${diaDiem}. Dùng công cụ Google Maps để tìm quán CÓ THẬT trong bán kính khoảng 1-2 km quanh đó (đi bộ hoặc ship nhanh được), rồi lọc theo món và tầm giá nhóm muốn.`
     : '- Bạn CHƯA biết nhóm ở đâu. Trước khi gợi ý quán, hỏi nhóm đang ở khu nào (tên đường, quận, thành phố). Nếu trong đoạn chat đã có người nói địa điểm thì dùng luôn.';
   return `Bạn là "${tenBot}", bot vui tính trong nhóm Zalo đặt cơm trưa ở văn phòng.
 Việc của bạn: giúp cả nhóm nhanh chóng thống nhất ăn gì trưa nay.
 ${viTri}
-- Gợi ý CỤ THỂ: 2-3 phương án, mỗi phương án một dòng gồm món + loại quán/khu vực + tầm giá ước lượng + một lý do ngắn. Không nói chung chung kiểu "tùy mọi người".
-- Chỉ nêu tên quán cụ thể khi quán đó nằm trong danh sách quán quen, hoặc bạn khá chắc quán có thật ở gần địa điểm. Không chắc thì nói loại món và gợi ý tra trên Grab/ShopeeFood.
+- Gợi ý CỤ THỂ: 2-3 quán, mỗi quán một dòng: tên quán - địa chỉ ngắn (số nhà, đường) - món nên gọi - tầm giá - cách bao xa. Không nói chung chung kiểu "tùy mọi người".
+- Chỉ nêu quán tìm thấy trên Google Maps hoặc có trong danh sách quán quen. Không bịa tên, địa chỉ, giá. Không tìm được thì nói thẳng và gợi ý loại món để nhóm tra Grab/ShopeeFood.
 - Bám sát yêu cầu nhóm đưa ra trong chat: tầm giá, món khô hay món nước, chay, ít dầu mỡ, ăn nhanh... Người nói sau được ưu tiên hơn.
 - Không đề xuất lại món hoặc quán đã ăn hôm qua và hai ngày trước (xem phần "đã ăn gần đây"); nếu nhóm vẫn muốn thì theo nhóm.
 - Nếu nhóm đã nghiêng về một món, ủng hộ và chốt nhanh thay vì đưa thêm lựa chọn.
@@ -132,6 +132,17 @@ export function chotDuPhong(tinNhan, tieuDe) {
   if (!cuoi.size) return `${tieuDe}\nHôm nay chưa có ai nhắn gì.`;
   return [tieuDe, 'Bot chưa gọi được AI, đây là tin nhắn cuối của từng người:',
     ...[...cuoi].map(([ten, nd]) => `- ${ten}: ${nd}`)].join('\n');
+}
+
+// Zalo không hiển thị markdown: bỏ **, ##, ``` và gọn khoảng trắng thừa.
+export function boMarkdown(chu) {
+  return String(chu ?? '')
+    .replace(/```[a-z]*\n?|```/g, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^\s*[*-]\s+/gm, '- ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 // '/chot abc' -> {lenh:'chot', phanCon:'abc'}; không phải lệnh -> {lenh:null}.

@@ -8,6 +8,8 @@ const SO_LAN_THU = 2;
 // gemini-flash-latest là bí danh luôn trỏ về bản Flash hiện hành, ít bị "chết" nhất
 export const MODEL_MAC_DINH = 'gemini-flash-latest';
 export const MODEL_DU_PHONG = ['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-3.1-flash-lite'];
+// Tra Google Maps (grounding) chỉ có quota free trên các bản Flash-Lite
+export const MODEL_BAN_DO = ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
 
 // Ghép text từ candidates[0]. Trả '' nếu bị chặn hoặc rỗng.
 export function layChu(data) {
@@ -25,18 +27,31 @@ export class Gemini {
 
   get sanSang() { return Boolean(this._key); }
 
-  async hoi(heThong, noiDung, { jsonMode = false, nhietDo = 0.5 } = {}) {
+  // banDo = true: cho Gemini tra Google Maps để tìm quán có thật. Hết quota thì tự hỏi lại không kèm bản đồ.
+  async hoi(heThong, noiDung, { jsonMode = false, nhietDo = 0.5, banDo = false } = {}) {
     if (!this._key) throw new Error('Chưa cấu hình GEMINI_API_KEY');
+    if (banDo) {
+      try {
+        return await this._hoiModels(MODEL_BAN_DO, heThong, noiDung, { nhietDo, tools: [{ google_maps: {} }] });
+      } catch (e) {
+        console.warn('Không tra được Google Maps, trả lời không kèm bản đồ:', e.message);
+      }
+    }
+    return this._hoiModels(this._models, heThong, noiDung, { jsonMode, nhietDo });
+  }
+
+  async _hoiModels(models, heThong, noiDung, { jsonMode = false, nhietDo = 0.5, tools = null } = {}) {
     const generationConfig = { temperature: nhietDo };
     if (jsonMode) generationConfig.responseMimeType = 'application/json';
     const body = JSON.stringify({
       systemInstruction: { parts: [{ text: heThong }] },
       contents: [{ role: 'user', parts: [{ text: noiDung }] }],
       generationConfig,
+      ...(tools ? { tools } : {}),
     });
 
     let loi = '';
-    for (const model of this._models) {
+    for (const model of models) {
       for (let lan = 1; lan <= SO_LAN_THU; lan++) {
         let r;
         try {

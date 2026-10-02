@@ -4,9 +4,9 @@ Bot ngồi trong nhóm Zalo đặt cơm trưa của công ty, chạy hoàn toàn
 (gói Free, không cần VPS, không cần tên miền):
 
 - Ghi lại mọi tin nhắn trong ngày để biết ai muốn ăn gì (lưu trong Cloudflare D1).
-- Ai gọi "bot" (hoặc tên bot) thì trả lời, gợi ý món bằng Gemini: 2–3 phương án cụ thể quanh
-  địa điểm công ty, bám theo yêu cầu trong chat (tầm giá, khô/nước, chay...), tránh lặp món
-  đã chốt hôm qua và hôm kia.
+- Ai gọi "bot" (hoặc tên bot) thì trả lời: Gemini **tra Google Maps** quanh địa điểm công ty,
+  đưa 2–3 quán có thật kèm địa chỉ, món, tầm giá, khoảng cách; bám theo yêu cầu trong chat
+  (tầm giá, khô/nước, chay...), tránh lặp món đã chốt hôm qua và hôm kia.
 - 10:30 nhắc cả nhóm chọn món. **11:15 tự chốt**: món chính, danh sách từng người ăn gì
   kèm ghi chú, ai không ăn, ai chưa rõ. Người đặt cơm chỉ cần nhìn tin này để gọi quán.
 - Chỉ chạy thứ Hai đến thứ Sáu (đổi được), mỗi ngày tự chốt đúng một lần.
@@ -69,7 +69,7 @@ dừng, lần cron sau tiếp tục. Tin nhắn được trả lời trong vài 
 3. Muốn chỉ mình được chốt: lấy "Mã của bạn" từ `/id`, điền vào `ADMIN_IDS`.
 4. Đặt địa điểm công ty: gõ `/diachi 123 Nguyễn Huệ, Quận 1, TP.HCM` trong nhóm (hoặc điền
    `DIA_DIEM` trong `wrangler.toml`). Không có địa điểm, bot sẽ hỏi nhóm ở đâu trước khi gợi ý.
-5. Sửa `QUAN_QUEN` theo các quán hay đặt để bot gợi ý và chốt sát thực tế.
+5. (Tùy chọn) `QUAN_QUEN`: quán hay đặt mà Google Maps không có, ví dụ cô bán cơm trong hẻm.
 
 > Tính năng nhóm của Zalo Bot đang ở bản Beta. Nếu bot chỉ nhận được tin khi có người tag
 > nó, dặn cả nhóm tag bot khi chọn món, ví dụ "@Bot Ngự Trù cho mình cơm gà".
