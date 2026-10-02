@@ -29,9 +29,9 @@ GIO_NHAC = "10:30"
 GIO_CHOT = "11:15"
 MUI_GIO = "Asia/Ho_Chi_Minh"
 # Mã nhóm nhận tin nhắc và tin chốt (gõ /id trong nhóm). Để trống: tự dùng mọi nhóm có người nhắn 7 ngày qua.
-GROUP_IDS = ""
+GROUP_IDS = "zgr-e7c577db6cb485eadca5"
 # Mã người được dùng /chot và /nghi (gõ /id). Để trống: ai cũng dùng được.
-ADMIN_IDS = ""
+ADMIN_IDS = "3ff63ff4e5a00cfe55b1"
 # Địa chỉ công ty để bot gợi ý quán quanh đó (tên đường, quận, thành phố). Trong nhóm có thể đổi bằng /diachi
 DIA_DIEM = ""
 # Tùy chọn: quán hay đặt mà Google Maps không có (ví dụ cô bán cơm trong hẻm), mỗi quán một dòng. Để trống cũng được.
