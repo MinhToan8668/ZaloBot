@@ -1,4 +1,4 @@
-name = "com-trua-bot"
+name = "zalobot"
 main = "src/index.js"
 compatibility_date = "2025-09-01"
 

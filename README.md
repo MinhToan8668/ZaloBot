@@ -54,7 +54,7 @@ npx wrangler secret put ZALO_BOT_TOKEN     # token từ Zalo Bot Manager
 npx wrangler secret put GEMINI_API_KEY     # https://aistudio.google.com/apikey
 npx wrangler secret put WEBHOOK_SECRET     # chuỗi ngẫu nhiên tự đặt, vd: openssl rand -hex 24
 
-# 3. Deploy, nhận địa chỉ dạng https://com-trua-bot.<tên>.workers.dev
+# 3. Deploy, nhận địa chỉ dạng https://zalobot.<tên>.workers.dev
 npm run deploy
 
 # 4. Báo Zalo gửi tin về Worker (điền 3 biến vào .dev.vars hoặc truyền thẳng)

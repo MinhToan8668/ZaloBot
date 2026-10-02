@@ -10,4 +10,4 @@ GEMINI_MODEL=gemini-2.5-flash
 # Tạo nhanh: openssl rand -hex 24
 WEBHOOK_SECRET=
 # Chỉ dùng cho `npm run webhook`: địa chỉ Worker sau khi deploy, kết thúc bằng /webhook
-WEBHOOK_URL=https://com-trua-bot.<ten-tai-khoan>.workers.dev/webhook
+WEBHOOK_URL=https://zalobot.<ten-tai-khoan>.workers.dev/webhook
