@@ -17,7 +17,8 @@ const MOT_LAN_CHO_GIAY = 20;         // một lần getUpdates chờ tối đa b
 
 const HUONG_DAN = (ten, goi, gio) => `Mình là ${ten}, lo vụ trưa nay ăn gì cho cả nhóm.
 - Cứ nhắn thoải mái món muốn ăn, mình ghi lại hết.
-- Gọi "${goi}" kèm câu hỏi nếu cần mình gợi ý món.
+- Gọi "${goi}" kèm câu hỏi nếu cần mình gợi ý món (đặt Grab/ShopeeFood). Nói thêm tầm giá, món khô/nước... mình gợi ý sát hơn.
+- Muốn đi ăn tại quán thì nhắn "${goi} ơi đi ăn ngoài", mình tìm quán gần công ty.
 - ${gio} mình tự chốt món và danh sách suất để đặt.
 
 Lệnh:
@@ -154,8 +155,10 @@ export class BotComTrua {
     const noiDung = chot.noiDungGuiAI(tin, this.cfg.muiGio, this.cfg.quanQuen,
       `Tin nhắn mới nhất, của ${ten}: ${text}\nHãy trả lời tin này.`, boiCanh);
     try {
-      const cau = await this.ai.hoi(chot.heThongTroChuyen(this.cfg.tenBot, this.cfg.gioChot, boiCanh.diaDiem), noiDung,
-        { banDo: Boolean(boiCanh.diaDiem) });
+      // Mặc định nhóm đặt ship (gợi ý món); nói "đi ăn ngoài" thì tra Google Maps tìm quán gần công ty
+      const cheDo = chot.laDiAnNgoai(text) ? 'ngoai' : 'ship';
+      const cau = await this.ai.hoi(chot.heThongTroChuyen(this.cfg.tenBot, this.cfg.gioChot, boiCanh.diaDiem, cheDo), noiDung,
+        { banDo: cheDo === 'ngoai' && Boolean(boiCanh.diaDiem) });
       await this.gui(chatId, chot.boMarkdown(cau));
     } catch (e) {
       console.error('Gemini lỗi khi trả lời:', e.message);

@@ -156,9 +156,12 @@ test('/diachi lưu địa điểm và đưa vào prompt; chốt được nhớ c
   assert.ok(nd.includes('Hôm qua (02/10): Bún bò - O Xuân'));
 });
 
-test('chưa có địa điểm thì prompt bảo bot hỏi nhóm ở đâu', async () => {
+test('đi ăn ngoài mà chưa có địa điểm thì prompt bảo bot hỏi nhóm ở đâu; đặt ship thì không', async () => {
   const ai = aiGia('ok');
-  const { bot } = tao(ai);
-  await bot.xuLyUpdate(update('g1', 'bot ơi ăn gì'));
+  const { bot, datGio } = tao(ai);
+  await bot.xuLyUpdate(update('g1', 'bot ơi đi ăn ngoài'));
   assert.ok(ai.goi.at(-1).ht.includes('CHƯA biết nhóm ở đâu'));
+  datGio(T0 + 10_000); // qua giãn cách trả lời
+  await bot.xuLyUpdate(update('g1', 'bot ơi ăn gì', { luc: T0 + 10_000 }));
+  assert.ok(ai.goi.at(-1).ht.includes('ĐẶT SHIP'));
 });

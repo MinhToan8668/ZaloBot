@@ -4,9 +4,11 @@ Bot ngồi trong nhóm Zalo đặt cơm trưa của công ty, chạy hoàn toàn
 (gói Free, không cần VPS, không cần tên miền):
 
 - Ghi lại mọi tin nhắn trong ngày để biết ai muốn ăn gì (lưu trong Cloudflare D1).
-- Ai gọi "bot" (hoặc tên bot) thì trả lời: Gemini **tra Google Maps** quanh địa điểm công ty,
-  đưa 2–3 quán có thật kèm địa chỉ, món, tầm giá, khoảng cách; bám theo yêu cầu trong chat
-  (tầm giá, khô/nước, chay...), tránh lặp món đã chốt hôm qua và hôm kia.
+- Ai gọi "bot" (hoặc tên bot) thì Gemini gợi ý, hai chế độ tự nhận theo câu chat:
+  - **Đặt ship** (mặc định, nhóm đặt Grab/ShopeeFood): 2–3 món kèm lý do, tầm giá, từ khóa gõ trên app.
+  - **Đi ăn ngoài** (nhóm nói "đi ăn ngoài", "quán gần công ty"...): tra **Google Maps** quanh địa
+    điểm công ty, đưa quán có thật kèm địa chỉ, món, giá, khoảng cách.
+  Cả hai đều bám yêu cầu trong chat (tầm giá, khô/nước, chay...) và tránh lặp món đã chốt hôm qua, hôm kia.
 - 10:30 nhắc cả nhóm chọn món. **11:15 tự chốt**: món chính, danh sách từng người ăn gì
   kèm ghi chú, ai không ăn, ai chưa rõ. Người đặt cơm chỉ cần nhìn tin này để gọi quán.
 - Chỉ chạy thứ Hai đến thứ Sáu (đổi được), mỗi ngày tự chốt đúng một lần.

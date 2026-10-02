@@ -128,3 +128,15 @@ test('Gemini banDo: hết quota Maps thì hỏi lại không kèm công cụ', a
     globalThis.fetch = fetchCu;
   }
 });
+
+test('laDiAnNgoai nhận ra ý đi ăn tại quán', () => {
+  for (const c of ['bot ơi đi ăn ngoài đi', 'ra ngoài ăn gì giờ', 'quán nào gần công ty ngon', 'ăn tại quán nha', 'đi bộ ra đâu ăn']) assert.ok(chot.laDiAnNgoai(c), c);
+  for (const c of ['bot ơi gợi ý món đặt grab', 'nay ăn gì', 'tầm 50k món nước']) assert.ok(!chot.laDiAnNgoai(c), c);
+});
+
+test('prompt ship nói về Grab/ShopeeFood, prompt ngoài nói về Google Maps', () => {
+  assert.ok(chot.heThongTroChuyen('B', '11:15', 'Q1', 'ship').includes('ĐẶT SHIP'));
+  assert.ok(!chot.heThongTroChuyen('B', '11:15', 'Q1', 'ship').includes('Google Maps'));
+  assert.ok(chot.heThongTroChuyen('B', '11:15', 'Q1', 'ngoai').includes('Google Maps'));
+  assert.ok(chot.heThongTroChuyen('B', '11:15', '', 'ngoai').includes('CHƯA biết nhóm ở đâu'));
+});
