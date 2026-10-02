@@ -1,0 +1,13 @@
+# Sao chép thành .dev.vars để chạy `npm run dev` và `npm run webhook`. KHÔNG commit .dev.vars.
+# Trên Cloudflare, đặt ba bí mật này bằng `npx wrangler secret put <TÊN>`.
+
+# Token bot Zalo (Zalo Bot Manager -> bot của bạn)
+ZALO_BOT_TOKEN=
+# Key Gemini: https://aistudio.google.com/apikey . Để trống thì bot chỉ liệt kê tin cuối mỗi người khi chốt.
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.5-flash
+# Chuỗi ngẫu nhiên 8-256 ký tự, tự đặt. Zalo gửi kèm mỗi webhook để bot biết đúng là Zalo gọi.
+# Tạo nhanh: openssl rand -hex 24
+WEBHOOK_SECRET=
+# Chỉ dùng cho `npm run webhook`: địa chỉ Worker sau khi deploy, kết thúc bằng /webhook
+WEBHOOK_URL=https://com-trua-bot.<ten-tai-khoan>.workers.dev/webhook
