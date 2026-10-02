@@ -140,3 +140,10 @@ test('prompt ship nói về Grab/ShopeeFood, prompt ngoài nói về Google Maps
   assert.ok(chot.heThongTroChuyen('B', '11:15', 'Q1', 'ngoai').includes('Google Maps'));
   assert.ok(chot.heThongTroChuyen('B', '11:15', '', 'ngoai').includes('CHƯA biết nhóm ở đâu'));
 });
+
+test('boTagBot bỏ tag ở đầu và giữa câu', () => {
+  assert.equal(chot.boTagBot('@Bot Ngự Trù /id', 'Bot Ngự Trù', ['bot', 'ngự trù']), '/id');
+  assert.equal(chot.boTagBot('@bot ngự trù  /chot', 'Bot Ngự Trù', ['bot']), '/chot');
+  assert.equal(chot.boTagBot('nay ăn gì @Bot Ngự Trù ơi', 'Bot Ngự Trù', []), 'nay ăn gì ơi');
+  assert.equal(chot.boTagBot('email bot@abc.com', 'Bot', ['bot']), 'email bot@abc.com');
+});

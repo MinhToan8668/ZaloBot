@@ -168,6 +168,15 @@ export function boMarkdown(chu) {
     .trim();
 }
 
+// Bỏ phần tag bot ở đầu/trong tin: '@Bot Ngự Trù /id' -> '/id'. Nhận cả tên bot lẫn các từ gọi.
+export function boTagBot(text, tenBot, tuGoi = []) {
+  let t = String(text ?? '');
+  for (const ten of [tenBot, ...tuGoi].map((x) => String(x ?? '').trim()).filter(Boolean).sort((a, b) => b.length - a.length)) {
+    t = t.replace(new RegExp(`@${thoatRegex(ten)}(?![\\p{L}\\p{N}])`, 'giu'), ' ');
+  }
+  return t.replace(/\s+/g, ' ').trim();
+}
+
 // '/chot abc' -> {lenh:'chot', phanCon:'abc'}; không phải lệnh -> {lenh:null}.
 export function tachLenh(text) {
   const m = String(text ?? '').trim().match(/^\/(\w+)(?:@\S+)?\s*([\s\S]*)$/);

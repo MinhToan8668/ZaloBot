@@ -104,7 +104,10 @@ export class BotComTrua {
     await this.kho.ghiNhom(chatId, chat.chat_type ?? '', luc);
     const ten = String(nguoi.display_name ?? 'Ẩn danh').trim() || 'Ẩn danh';
 
-    const { lenh, phanCon } = chot.tachLenh(text);
+    const daTag = /@/.test(text) && chot.boTagBot(text, this.cfg.tenBot, this.cfg.tuGoi) !== text.trim();
+    const textSach = chot.boTagBot(text, this.cfg.tenBot, this.cfg.tuGoi);
+    if (chat.chat_type === 'GROUP') console.log(`Tin nhóm ${chatId} từ ${ten}: ${text.slice(0, 120)}`);
+    const { lenh, phanCon } = chot.tachLenh(textSach);
     if (lenh) return this.xuLyLenh(lenh, chatId, userId, phanCon);
 
     const ngay = chot.gioDiaPhuong(luc, this.cfg.muiGio).ngay;
@@ -112,7 +115,7 @@ export class BotComTrua {
     const moi = await this.kho.luuTin({ chatId, messageId, userId, ten, noiDung: text, luc, ngay });
     if (!moi) return; // Zalo gửi lại tin cũ
 
-    if (chot.laGoiBot(text, this.cfg.tuGoi) || chat.chat_type === 'PRIVATE') {
+    if (daTag || chot.laGoiBot(text, this.cfg.tuGoi) || chat.chat_type === 'PRIVATE') {
       await this.traLoi(chatId, ten, text);
     }
   }

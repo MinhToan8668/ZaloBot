@@ -165,3 +165,9 @@ test('đi ăn ngoài mà chưa có địa điểm thì prompt bảo bot hỏi nh
   await bot.xuLyUpdate(update('g1', 'bot ơi ăn gì', { luc: T0 + 10_000 }));
   assert.ok(ai.goi.at(-1).ht.includes('ĐẶT SHIP'));
 });
+
+test('lệnh kèm tag bot trong nhóm vẫn chạy', async () => {
+  const { bot, zalo } = tao(aiGia('{}'));
+  await bot.xuLyUpdate(update('g1', '@Bot /id'));
+  assert.ok(zalo.daGui.at(-1)[1].includes('Mã cuộc trò chuyện này: g1'));
+});
