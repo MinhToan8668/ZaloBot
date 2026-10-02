@@ -2,6 +2,10 @@ name = "zalobot"
 main = "src/index.js"
 compatibility_date = "2025-09-01"
 
+# Xem log trên dashboard: Worker -> Observability -> Logs
+[observability]
+enabled = true
+
 # Giờ cron là UTC. Giờ Việt Nam = UTC + 7, nên 10:30 VN = 03:30 UTC, 11:15 VN = 04:15 UTC.
 # Chỉ chạy thứ Hai đến thứ Sáu (1-5). Đổi giờ ở đây thì đổi cả GIO_NHAC / GIO_CHOT bên dưới.
 [triggers]

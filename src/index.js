@@ -187,7 +187,9 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (request.method === 'GET' && url.pathname === '/') return new Response('Bot cơm trưa đang chạy.', { status: 200 });
-    if (request.method !== 'POST' || url.pathname !== '/webhook') return new Response('Not found', { status: 404 });
+    if (url.pathname !== '/webhook') return new Response('Not found', { status: 404 });
+    // Zalo gọi thử webhook có thể bằng GET/HEAD: cứ trả 200
+    if (request.method !== 'POST') return Response.json({ ok: true });
 
     // Lúc setWebhook, Zalo gọi thử KHÔNG kèm secret và cần nhận 2xx mới "verification" được.
     // Nên: sai hoặc thiếu secret thì vẫn trả 200 nhưng bỏ qua, không xử lý gì.
