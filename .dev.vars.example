@@ -6,8 +6,8 @@ ZALO_BOT_TOKEN=
 # Key Gemini: https://aistudio.google.com/apikey . Để trống thì bot chỉ liệt kê tin cuối mỗi người khi chốt.
 GEMINI_API_KEY=
 GEMINI_MODEL=gemini-2.5-flash
-# Chuỗi ngẫu nhiên 8-256 ký tự, tự đặt. Zalo gửi kèm mỗi webhook để bot biết đúng là Zalo gọi.
-# Tạo nhanh: openssl rand -hex 24
+# Chuỗi ngẫu nhiên 8-256 ký tự, tự đặt. Chỉ có tác dụng khi dùng webhook (Worker có tên miền riêng),
+# nhưng vẫn phải có. Tạo nhanh: openssl rand -hex 24
 WEBHOOK_SECRET=
-# Chỉ dùng cho `npm run webhook`: địa chỉ Worker sau khi deploy, kết thúc bằng /webhook
-WEBHOOK_URL=https://zalobot.<ten-tai-khoan>.workers.dev/webhook
+# Chỉ dùng cho `npm run webhook` khi có tên miền riêng, kết thúc bằng /webhook
+WEBHOOK_URL=https://<ten-mien-rieng>/webhook

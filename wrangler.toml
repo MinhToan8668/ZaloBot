@@ -6,10 +6,12 @@ compatibility_date = "2025-09-01"
 [observability]
 enabled = true
 
-# Giờ cron là UTC. Giờ Việt Nam = UTC + 7, nên 10:30 VN = 03:30 UTC, 11:15 VN = 04:15 UTC.
-# Chỉ chạy thứ Hai đến thứ Sáu (1-5). Đổi giờ ở đây thì đổi cả GIO_NHAC / GIO_CHOT bên dưới.
+# Cron 1: "* * * * *" mỗi phút hỏi Zalo có tin mới không (giữ nguyên, bot nhận tin nhờ dòng này).
+# Cron 2, 3: giờ nhắc và giờ chốt. Giờ cron là UTC, giờ Việt Nam = UTC + 7,
+#   nên 10:30 VN = 03:30 UTC, 11:15 VN = 04:15 UTC. Chỉ thứ Hai đến thứ Sáu (1-5).
+#   Đổi giờ ở đây thì đổi cả GIO_NHAC / GIO_CHOT bên dưới.
 [triggers]
-crons = ["30 3 * * 1-5", "15 4 * * 1-5"]
+crons = ["* * * * *", "30 3 * * 1-5", "15 4 * * 1-5"]
 
 [[d1_databases]]
 binding = "DB"

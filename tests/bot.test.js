@@ -30,7 +30,7 @@ class KhoGia {
   async donDep() {}
 }
 
-const zaloGia = () => ({ daGui: [], async sendMessage(c, t) { this.daGui.push([c, t]); }, async sendTyping() {} });
+const zaloGia = () => ({ daGui: [], async sendMessage(c, t) { this.daGui.push([c, t]); }, async sendTyping() {}, async getUpdates() { return []; } });
 const aiGia = (traVe, loi = false) => ({ sanSang: true, async hoi() { if (loi) throw new Error('hỏng'); return traVe; } });
 
 const T0 = Date.UTC(2026, 9, 2, 3, 0); // 10:00 VN thứ Sáu 2/10/2026
@@ -114,4 +114,22 @@ test('GROUP_IDS chặn nhóm lạ và chat riêng của người không phải a
   await bot.xuLyUpdate(update('u9', 'bot ơi', { kieu: 'PRIVATE', uid: 'u9' }));
   assert.equal(zalo.daGui.length, 0);
   assert.equal(kho.tin.length, 0);
+});
+
+test('vongNhanTin xử lý tin từ getUpdates rồi dừng khi hết giờ', async () => {
+  const { bot, zalo, kho } = tao(aiGia('{}'));
+  let lan = 0;
+  zalo.getUpdates = async () => (++lan === 1 ? [update('g1', 'cơm gà nha'), { event_name: 'khac' }] : []);
+  const n = await bot.vongNhanTin(3500);
+  assert.equal(n, 2);
+  assert.equal(kho.tin.length, 1);
+  assert.ok(lan >= 1);
+});
+
+test('vongNhanTin dừng khi getUpdates lỗi, không lặp vô hạn', async () => {
+  const { bot, zalo } = tao(aiGia('{}'));
+  let lan = 0;
+  zalo.getUpdates = async () => { lan++; throw new Error('token sai'); };
+  await bot.vongNhanTin(60_000);
+  assert.equal(lan, 1);
 });

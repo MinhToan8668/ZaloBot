@@ -1,6 +1,7 @@
 // Bot Zalo nhóm cơm trưa chạy trên Cloudflare Workers.
-// - fetch():     nhận webhook từ Zalo, ghi tin, trả lời khi được gọi, xử lý lệnh
-// - scheduled(): Cron Trigger nhắc chọn món (GIO_NHAC) và tự chốt (GIO_CHOT)
+// - scheduled() mỗi phút: hỏi Zalo tin mới (getUpdates), ghi tin, trả lời khi được gọi, xử lý lệnh
+// - scheduled() giờ cấu hình: nhắc chọn món (GIO_NHAC) và tự chốt (GIO_CHOT)
+// - fetch(): webhook, chỉ dùng được khi Worker có tên miền riêng (workers.dev chặn máy chủ Zalo)
 
 import * as chot from './chot.js';
 import { Gemini } from './gemini.js';
@@ -10,6 +11,9 @@ import { ZaloBot } from './zalo.js';
 const GIAN_CACH_TRA_LOI_MS = 5_000;  // tối thiểu giữa hai câu trả lời AI trong cùng nhóm
 const SO_NGAY_NHOM_HOAT_DONG = 7;
 const SO_NGAY_GIU_TIN = 30;
+const CRON_NHAN_TIN = '* * * * *';   // mỗi phút một lần, mỗi lần hỏi Zalo liên tục chừng này lâu:
+const THOI_GIAN_HOI_MS = 50_000;
+const MOT_LAN_CHO_GIAY = 20;         // một lần getUpdates chờ tối đa bao lâu
 
 const HUONG_DAN = (ten, goi, gio) => `Mình là ${ten}, lo vụ trưa nay ăn gì cho cả nhóm.
 - Cứ nhắn thoải mái món muốn ăn, mình ghi lại hết.
@@ -155,6 +159,29 @@ export class BotComTrua {
     return this.gui(chatId, await this.tongHop(chatId, `🍱 CHỐT CƠM TRƯA ${this.gioHienTai()}`));
   }
 
+  // ---------- nhận tin bằng getUpdates ----------
+
+  // Hỏi Zalo liên tục trong `hanMs` mili giây rồi dừng, để lần cron sau tiếp tục.
+  async vongNhanTin(hanMs) {
+    const het = Date.now() + hanMs;
+    let daXuLy = 0;
+    while (true) {
+      const conLaiGiay = Math.floor((het - Date.now()) / 1000);
+      if (conLaiGiay < 3) break;
+      let upds;
+      try {
+        upds = await this.zalo.getUpdates(Math.min(MOT_LAN_CHO_GIAY, conLaiGiay));
+      } catch (e) {
+        console.error('getUpdates lỗi, dừng vòng này:', e.message);
+        break;
+      }
+      for (const upd of upds) {
+        try { await this.xuLyUpdate(upd); daXuLy++; } catch (e) { console.error('Lỗi xử lý tin:', e.message); }
+      }
+    }
+    return daXuLy;
+  }
+
   // ---------- hẹn giờ (cron) ----------
 
   async chayHenGio(gioCron) {
@@ -207,10 +234,14 @@ export default {
     return Response.json({ ok: true });
   },
 
-  async scheduled(event, env, ctx) {
+  async scheduled(event, env) {
     const bot = taoBot(env);
+    if (event.cron === CRON_NHAN_TIN) {
+      await bot.vongNhanTin(THOI_GIAN_HOI_MS);
+      return;
+    }
     bot.bayGio = () => event.scheduledTime;
     const { gio } = chot.gioDiaPhuong(event.scheduledTime, bot.cfg.muiGio);
-    ctx.waitUntil(bot.chayHenGio(gio));
+    await bot.chayHenGio(gio);
   },
 };

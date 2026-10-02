@@ -1,6 +1,7 @@
-// Đăng ký webhook với Zalo. Chạy sau khi deploy:
-//   ZALO_BOT_TOKEN=... WEBHOOK_SECRET=... WEBHOOK_URL=https://com-trua-bot.<tên>.workers.dev/webhook npm run webhook
+// Đăng ký webhook với Zalo (chỉ khi Worker có tên miền riêng, xem README):
+//   ZALO_BOT_TOKEN=... WEBHOOK_SECRET=... WEBHOOK_URL=https://<tên miền>/webhook npm run webhook
 // Hoặc điền ba biến đó vào .dev.vars rồi chạy `npm run webhook`.
+// Xóa webhook để bot nhận tin bằng getUpdates: `npm run webhook -- --xoa`
 import { readFileSync } from 'node:fs';
 import { ZaloBot } from '../src/zalo.js';
 
@@ -15,6 +16,11 @@ function docDevVars() {
 }
 
 const env = { ...docDevVars(), ...process.env };
+if (process.argv.includes('--xoa')) {
+  if (!env.ZALO_BOT_TOKEN) { console.error('Thiếu biến: ZALO_BOT_TOKEN'); process.exit(1); }
+  console.log(JSON.stringify(await new ZaloBot(env.ZALO_BOT_TOKEN).deleteWebhook(), null, 2));
+  process.exit(0);
+}
 const thieu = ['ZALO_BOT_TOKEN', 'WEBHOOK_SECRET', 'WEBHOOK_URL'].filter((k) => !env[k]);
 if (thieu.length) { console.error('Thiếu biến:', thieu.join(', ')); process.exit(1); }
 if (!/^https:\/\//.test(env.WEBHOOK_URL)) { console.error('WEBHOOK_URL phải bắt đầu bằng https://'); process.exit(1); }
