@@ -115,6 +115,6 @@ Kiểm tra tự động: `npm test`. Xem log trên Cloudflare: `npx wrangler tai
 
 - Token Zalo, key Gemini và `WEBHOOK_SECRET` chỉ nằm trong Cloudflare Secrets (và
   `.dev.vars` trên máy, đã có trong `.gitignore`). Không ghi vào `wrangler.toml`.
-- Worker chỉ nhận webhook có header `X-Bot-Api-Secret-Token` đúng với `WEBHOOK_SECRET`.
+- Worker chỉ xử lý webhook có header `X-Bot-Api-Secret-Token` đúng với `WEBHOOK_SECRET`; thiếu hoặc sai thì trả 200 rỗng và bỏ qua (Zalo gọi thử lúc đăng ký không kèm secret).
 - Token lỡ lộ: vào Zalo Bot Manager tạo token mới, `wrangler secret put ZALO_BOT_TOKEN`
   lại rồi chạy `npm run webhook` lại.

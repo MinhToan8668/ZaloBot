@@ -189,8 +189,11 @@ export default {
     if (request.method === 'GET' && url.pathname === '/') return new Response('Bot cơm trưa đang chạy.', { status: 200 });
     if (request.method !== 'POST' || url.pathname !== '/webhook') return new Response('Not found', { status: 404 });
 
+    // Lúc setWebhook, Zalo gọi thử KHÔNG kèm secret và cần nhận 2xx mới "verification" được.
+    // Nên: sai hoặc thiếu secret thì vẫn trả 200 nhưng bỏ qua, không xử lý gì.
     if (!env.WEBHOOK_SECRET || request.headers.get('X-Bot-Api-Secret-Token') !== env.WEBHOOK_SECRET) {
-      return new Response('Forbidden', { status: 403 });
+      console.warn('Webhook không có secret hợp lệ, bỏ qua');
+      return Response.json({ ok: true });
     }
     let body;
     try { body = await request.json(); } catch { return new Response('Bad request', { status: 400 }); }
