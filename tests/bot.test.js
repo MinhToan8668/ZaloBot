@@ -4,7 +4,12 @@ import { BotComTrua, docCauHinh } from '../src/index.js';
 
 // Kho trong bộ nhớ, cùng giao diện với src/kho.js
 class KhoGia {
-  tin = []; nhom = new Map(); lich = new Map();
+  tin = []; nhom = new Map(); lich = new Map(); caiDat = new Map(); chotNgay = new Map();
+  async damBaoLuocDo() {}
+  async layCaiDat(c, k) { return this.caiDat.get(`${c}|${k}`) ?? ''; }
+  async datCaiDat(c, k, v) { this.caiDat.set(`${c}|${k}`, v); }
+  async luuChot(c, n, mon, quan) { this.chotNgay.set(`${c}|${n}`, { ngay: n, mon, quan }); }
+  async chotGanDay(c, homNay) { return [...this.chotNgay.values()].filter((x) => x.ngay < homNay).sort((a, b) => (a.ngay < b.ngay ? 1 : -1)); }
   khoaLich(c, n) { return `${c}|${n}`; }
   async luuTin(t) {
     if (this.tin.some((x) => x.chatId === t.chatId && x.messageId === t.messageId)) return false;
@@ -31,7 +36,7 @@ class KhoGia {
 }
 
 const zaloGia = () => ({ daGui: [], async sendMessage(c, t) { this.daGui.push([c, t]); }, async sendTyping() {}, async getUpdates() { return []; } });
-const aiGia = (traVe, loi = false) => ({ sanSang: true, async hoi() { if (loi) throw new Error('hỏng'); return traVe; } });
+const aiGia = (traVe, loi = false) => ({ sanSang: true, goi: [], async hoi(ht, nd) { this.goi.push({ ht, nd }); if (loi) throw new Error('hỏng'); return traVe; } });
 
 const T0 = Date.UTC(2026, 9, 2, 3, 0); // 10:00 VN thứ Sáu 2/10/2026
 
@@ -132,4 +137,28 @@ test('vongNhanTin dừng khi getUpdates lỗi, không lặp vô hạn', async ()
   zalo.getUpdates = async () => { lan++; throw new Error('token sai'); };
   await bot.vongNhanTin(60_000);
   assert.equal(lan, 1);
+});
+
+test('/diachi lưu địa điểm và đưa vào prompt; chốt được nhớ cho hôm sau', async () => {
+  const ai = aiGia(JSON.stringify({ mon_chot: 'Bún bò', quan: 'O Xuân', dat_rieng: [{ ten: 'An', mon: 'Bún bò' }] }));
+  const { bot, zalo, kho, datGio } = tao(ai);
+  await bot.xuLyUpdate(update('g1', '/diachi 123 Nguyễn Huệ, Quận 1'));
+  assert.ok(zalo.daGui.at(-1)[1].includes('Đã ghi nhớ địa điểm'));
+  await bot.xuLyUpdate(update('g1', 'bún bò nha'));
+  await bot.xuLyUpdate(update('g1', '/chot'));
+  assert.deepEqual([...kho.chotNgay.values()], [{ ngay: '2026-10-02', mon: 'Bún bò', quan: 'O Xuân' }]);
+  // Hôm sau: prompt trả lời phải có địa điểm và món hôm qua
+  ai.goi.length = 0;
+  datGio(T0 + 86400_000);
+  await bot.xuLyUpdate(update('g1', 'bot ơi nay ăn gì', { luc: T0 + 86400_000 }));
+  const { ht, nd } = ai.goi.at(-1);
+  assert.ok(ht.includes('123 Nguyễn Huệ'));
+  assert.ok(nd.includes('Hôm qua (02/10): Bún bò - O Xuân'));
+});
+
+test('chưa có địa điểm thì prompt bảo bot hỏi nhóm ở đâu', async () => {
+  const ai = aiGia('ok');
+  const { bot } = tao(ai);
+  await bot.xuLyUpdate(update('g1', 'bot ơi ăn gì'));
+  assert.ok(ai.goi.at(-1).ht.includes('CHƯA biết nhóm ở đâu'));
 });

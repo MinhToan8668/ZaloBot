@@ -32,6 +32,8 @@ MUI_GIO = "Asia/Ho_Chi_Minh"
 GROUP_IDS = ""
 # Mã người được dùng /chot và /nghi (gõ /id). Để trống: ai cũng dùng được.
 ADMIN_IDS = ""
+# Địa chỉ công ty để bot gợi ý quán quanh đó (tên đường, quận, thành phố). Trong nhóm có thể đổi bằng /diachi
+DIA_DIEM = ""
 # Quán quen, mỗi quán một dòng, để bot gợi ý và chốt sát thực tế
 QUAN_QUEN = """
 Cơm tấm Bà Ba - cơm sườn, bì, chả (35-45k)

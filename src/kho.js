@@ -1,7 +1,47 @@
-// Lưu tin nhắn và trạng thái hẹn giờ trong Cloudflare D1. Lược đồ: schema.sql
+// Lưu tin nhắn và trạng thái hẹn giờ trong Cloudflare D1. Lược đồ đầy đủ: schema.sql
+
+// Bảng thêm sau này: tạo tự động nếu chưa có, để không phải chạy lại schema.sql trên dashboard.
+const LUOC_DO_THEM = [
+  'CREATE TABLE IF NOT EXISTS cai_dat (chat_id TEXT NOT NULL, khoa TEXT NOT NULL, gia_tri TEXT, PRIMARY KEY (chat_id, khoa))',
+  'CREATE TABLE IF NOT EXISTS chot_ngay (chat_id TEXT NOT NULL, ngay TEXT NOT NULL, mon TEXT, quan TEXT, PRIMARY KEY (chat_id, ngay))',
+];
+let daDamBao = false;
 
 export class Kho {
   constructor(db) { this._db = db; }
+
+  // Chạy một lần cho mỗi lần Worker khởi động
+  async damBaoLuocDo() {
+    if (daDamBao) return;
+    await this._db.batch(LUOC_DO_THEM.map((sql) => this._db.prepare(sql)));
+    daDamBao = true;
+  }
+
+  async layCaiDat(chatId, khoa) {
+    const r = await this._db.prepare('SELECT gia_tri FROM cai_dat WHERE chat_id = ? AND khoa = ?').bind(chatId, khoa).first();
+    return r?.gia_tri ?? '';
+  }
+
+  datCaiDat(chatId, khoa, giaTri) {
+    return this._db.prepare(
+      'INSERT INTO cai_dat (chat_id, khoa, gia_tri) VALUES (?, ?, ?) ON CONFLICT(chat_id, khoa) DO UPDATE SET gia_tri = excluded.gia_tri',
+    ).bind(chatId, khoa, giaTri).run();
+  }
+
+  luuChot(chatId, ngay, mon, quan) {
+    return this._db.prepare(
+      'INSERT INTO chot_ngay (chat_id, ngay, mon, quan) VALUES (?, ?, ?, ?)'
+      + ' ON CONFLICT(chat_id, ngay) DO UPDATE SET mon = excluded.mon, quan = excluded.quan',
+    ).bind(chatId, ngay, mon, quan).run();
+  }
+
+  // Các ngày gần đây đã chốt gì (trừ hôm nay), mới nhất trước.
+  async chotGanDay(chatId, homNay, soNgay = 7) {
+    const { results } = await this._db.prepare(
+      'SELECT ngay, mon, quan FROM chot_ngay WHERE chat_id = ? AND ngay < ? ORDER BY ngay DESC LIMIT ?',
+    ).bind(chatId, homNay, soNgay).all();
+    return results;
+  }
 
   // Trả true nếu là tin mới (webhook có thể gửi lại cùng một tin).
   async luuTin({ chatId, messageId, userId, ten, noiDung, luc, ngay }) {

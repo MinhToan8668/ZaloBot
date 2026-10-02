@@ -4,7 +4,9 @@ Bot ngồi trong nhóm Zalo đặt cơm trưa của công ty, chạy hoàn toàn
 (gói Free, không cần VPS, không cần tên miền):
 
 - Ghi lại mọi tin nhắn trong ngày để biết ai muốn ăn gì (lưu trong Cloudflare D1).
-- Ai gọi "bot" (hoặc tên bot) thì trả lời, gợi ý món bằng Gemini.
+- Ai gọi "bot" (hoặc tên bot) thì trả lời, gợi ý món bằng Gemini: 2–3 phương án cụ thể quanh
+  địa điểm công ty, bám theo yêu cầu trong chat (tầm giá, khô/nước, chay...), tránh lặp món
+  đã chốt hôm qua và hôm kia.
 - 10:30 nhắc cả nhóm chọn món. **11:15 tự chốt**: món chính, danh sách từng người ăn gì
   kèm ghi chú, ai không ăn, ai chưa rõ. Người đặt cơm chỉ cần nhìn tin này để gọi quán.
 - Chỉ chạy thứ Hai đến thứ Sáu (đổi được), mỗi ngày tự chốt đúng một lần.
@@ -17,6 +19,7 @@ Bot ngồi trong nhóm Zalo đặt cơm trưa của công ty, chạy hoàn toàn
 | `/chot` | Chốt ngay, không đợi 11:15 (chốt lại nếu có người đổi món) |
 | `/tinhhinh` | Xem mọi người đang chọn gì, chưa chốt |
 | `/nghi` | Hôm nay không đặt cơm, bot không tự chốt |
+| `/diachi <địa chỉ>` | Đặt địa điểm công ty để bot gợi ý quán quanh đó (không có tham số: xem địa điểm hiện tại) |
 | `/id` | Xem mã nhóm và mã của bạn để điền cấu hình |
 | `/hd` | Hướng dẫn |
 
@@ -64,7 +67,9 @@ dừng, lần cron sau tiếp tục. Tin nhắn được trả lời trong vài 
 2. Trong nhóm gõ `/id`, bot trả về mã nhóm. Điền vào `GROUP_IDS` trong `wrangler.toml`,
    push. Từ đó bot chỉ nhắc, chốt và trả lời trong đúng nhóm này.
 3. Muốn chỉ mình được chốt: lấy "Mã của bạn" từ `/id`, điền vào `ADMIN_IDS`.
-4. Sửa `QUAN_QUEN` theo các quán hay đặt để bot gợi ý và chốt sát thực tế.
+4. Đặt địa điểm công ty: gõ `/diachi 123 Nguyễn Huệ, Quận 1, TP.HCM` trong nhóm (hoặc điền
+   `DIA_DIEM` trong `wrangler.toml`). Không có địa điểm, bot sẽ hỏi nhóm ở đâu trước khi gợi ý.
+5. Sửa `QUAN_QUEN` theo các quán hay đặt để bot gợi ý và chốt sát thực tế.
 
 > Tính năng nhóm của Zalo Bot đang ở bản Beta. Nếu bot chỉ nhận được tin khi có người tag
 > nó, dặn cả nhóm tag bot khi chọn món, ví dụ "@Bot Ngự Trù cho mình cơm gà".

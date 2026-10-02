@@ -99,3 +99,8 @@ test('Gemini tự chuyển model dự phòng khi 404/429', async () => {
     globalThis.fetch = fetchCu;
   }
 });
+
+test('dongDaAn gắn nhãn hôm qua / hôm kia', () => {
+  const t = chot.dongDaAn([{ ngay: '2026-10-01', mon: 'Phở', quan: '' }, { ngay: '2026-09-30', mon: '', quan: 'Cơm Hoa Mai' }, { ngay: '2026-09-28', mon: '', quan: '' }], '2026-10-02');
+  assert.equal(t, 'Hôm qua (01/10): Phở\nHôm kia (30/09): Cơm Hoa Mai');
+});

@@ -22,6 +22,21 @@ CREATE TABLE IF NOT EXISTS nhom (
     lan_tra_loi INTEGER
 );
 
+CREATE TABLE IF NOT EXISTS cai_dat (
+    chat_id TEXT NOT NULL,
+    khoa TEXT NOT NULL,
+    gia_tri TEXT,
+    PRIMARY KEY (chat_id, khoa)
+);
+
+CREATE TABLE IF NOT EXISTS chot_ngay (
+    chat_id TEXT NOT NULL,
+    ngay TEXT NOT NULL,
+    mon TEXT,
+    quan TEXT,
+    PRIMARY KEY (chat_id, ngay)
+);
+
 CREATE TABLE IF NOT EXISTS lich (
     chat_id TEXT NOT NULL,
     ngay TEXT NOT NULL,

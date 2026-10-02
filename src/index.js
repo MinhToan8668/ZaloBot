@@ -24,6 +24,7 @@ Lệnh:
 /chot - chốt ngay
 /tinhhinh - xem mọi người đang chọn gì
 /nghi - hôm nay không đặt cơm, bot không tự chốt
+/diachi <địa chỉ> - đặt địa điểm công ty để bot gợi ý quán gần đó
 /id - xem mã nhóm (để cấu hình)
 /hd - xem lại hướng dẫn này`;
 
@@ -38,6 +39,7 @@ export function docCauHinh(env) {
     tenBot,
     tuGoi: chot.docDs(env.TU_GOI || `bot,${tenBot}`),
     quanQuen: env.QUAN_QUEN || '',
+    diaDiem: (env.DIA_DIEM || '').trim(),
   };
 }
 
@@ -60,6 +62,17 @@ export class BotComTrua {
   }
 
   laAdmin(userId) { return !this.cfg.adminIds.length || this.cfg.adminIds.includes(userId); }
+
+  // Địa điểm: nhóm đặt bằng /diachi được ưu tiên, không thì lấy DIA_DIEM cấu hình chung.
+  async diaDiemCua(chatId) {
+    return (await this.kho.layCaiDat(chatId, 'dia_diem')) || this.cfg.diaDiem;
+  }
+
+  async boiCanh(chatId) {
+    const homNay = this.homNay();
+    const [diaDiem, lichSu] = await Promise.all([this.diaDiemCua(chatId), this.kho.chotGanDay(chatId, homNay)]);
+    return { diaDiem, daAn: chot.dongDaAn(lichSu, homNay) };
+  }
 
   // Đã cấu hình GROUP_IDS thì chỉ phục vụ các nhóm đó, và chat riêng của admin.
   duocPhucVu(chatId, chatType, userId) {
@@ -90,8 +103,8 @@ export class BotComTrua {
     await this.kho.ghiNhom(chatId, chat.chat_type ?? '', luc);
     const ten = String(nguoi.display_name ?? 'Ẩn danh').trim() || 'Ẩn danh';
 
-    const { lenh } = chot.tachLenh(text);
-    if (lenh) return this.xuLyLenh(lenh, chatId, userId);
+    const { lenh, phanCon } = chot.tachLenh(text);
+    if (lenh) return this.xuLyLenh(lenh, chatId, userId, phanCon);
 
     const ngay = chot.gioDiaPhuong(luc, this.cfg.muiGio).ngay;
     const messageId = String(msg.message_id ?? `${userId}-${luc}`);
@@ -103,14 +116,23 @@ export class BotComTrua {
     }
   }
 
-  async xuLyLenh(lenh, chatId, userId) {
+  async xuLyLenh(lenh, chatId, userId, phanCon = '') {
     switch (lenh) {
+      case 'diachi': {
+        if (!phanCon) {
+          const hienTai = await this.diaDiemCua(chatId);
+          return this.gui(chatId, hienTai ? `Địa điểm hiện tại: ${hienTai}\nĐổi bằng: /diachi <địa chỉ mới>` : 'Chưa đặt địa điểm. Gõ: /diachi <địa chỉ công ty>, ví dụ /diachi 123 Nguyễn Huệ, Quận 1, TP.HCM');
+        }
+        if (!this.laAdmin(userId)) return this.gui(chatId, 'Lệnh này chỉ người phụ trách đặt cơm dùng được nha.');
+        await this.kho.datCaiDat(chatId, 'dia_diem', phanCon.slice(0, 200));
+        return this.gui(chatId, `Đã ghi nhớ địa điểm: ${phanCon.slice(0, 200)}. Từ giờ bot gợi ý quán quanh đây.`);
+      }
       case 'hd': case 'help': case 'start':
         return this.gui(chatId, HUONG_DAN(this.cfg.tenBot, this.cfg.tuGoi[0] || 'bot', this.cfg.gioChot));
       case 'id':
         return this.gui(chatId, `Mã cuộc trò chuyện này: ${chatId}\nMã của bạn: ${userId}`);
       case 'tinhhinh':
-        return this.gui(chatId, await this.tongHop(chatId, `Tình hình đến ${this.gioHienTai()} (chưa chốt)`));
+        return this.gui(chatId, (await this.tongHop(chatId, `Tình hình đến ${this.gioHienTai()} (chưa chốt)`)).text);
       case 'chot': case 'nghi': {
         if (!this.laAdmin(userId)) return this.gui(chatId, 'Lệnh này chỉ người phụ trách đặt cơm dùng được nha.');
         if (lenh === 'chot') return this.chot(chatId);
@@ -128,35 +150,41 @@ export class BotComTrua {
     if (!this.ai.sanSang) return;
     if (!(await this.kho.xinTraLoi(chatId, this.bayGio(), GIAN_CACH_TRA_LOI_MS))) return;
     await this.zalo.sendTyping(chatId);
-    const tin = await this.kho.tinTrongNgay(chatId, this.homNay());
+    const [tin, boiCanh] = await Promise.all([this.kho.tinTrongNgay(chatId, this.homNay()), this.boiCanh(chatId)]);
     const noiDung = chot.noiDungGuiAI(tin, this.cfg.muiGio, this.cfg.quanQuen,
-      `Tin nhắn mới nhất, của ${ten}: ${text}\nHãy trả lời tin này.`);
+      `Tin nhắn mới nhất, của ${ten}: ${text}\nHãy trả lời tin này.`, boiCanh);
     try {
-      const cau = await this.ai.hoi(chot.heThongTroChuyen(this.cfg.tenBot, this.cfg.gioChot), noiDung);
+      const cau = await this.ai.hoi(chot.heThongTroChuyen(this.cfg.tenBot, this.cfg.gioChot, boiCanh.diaDiem), noiDung);
       await this.gui(chatId, cau);
     } catch (e) {
       console.error('Gemini lỗi khi trả lời:', e.message);
     }
   }
 
-  // Tổng hợp ý kiến hôm nay thành tin nhắn. AI lỗi thì dùng bản dự phòng.
+  // Tổng hợp ý kiến hôm nay. Trả {text, kq}; kq = null khi AI lỗi (dùng bản dự phòng).
   async tongHop(chatId, tieuDe) {
     const tin = await this.kho.tinTrongNgay(chatId, this.homNay());
     if (tin.length && this.ai.sanSang) {
       try {
-        const chu = await this.ai.hoi(chot.HE_THONG_CHOT, chot.noiDungGuiAI(tin, this.cfg.muiGio, this.cfg.quanQuen),
-          { jsonMode: true, nhietDo: 0.2 });
-        return chot.dinhDangChot(chot.docKetQua(chu), tieuDe);
+        const boiCanh = await this.boiCanh(chatId);
+        const chu = await this.ai.hoi(chot.HE_THONG_CHOT,
+          chot.noiDungGuiAI(tin, this.cfg.muiGio, this.cfg.quanQuen, '', boiCanh), { jsonMode: true, nhietDo: 0.2 });
+        const kq = chot.docKetQua(chu);
+        return { text: chot.dinhDangChot(kq, tieuDe), kq };
       } catch (e) {
         console.error('Không tổng hợp được bằng AI:', e.message);
       }
     }
-    return chot.chotDuPhong(tin, tieuDe);
+    return { text: chot.chotDuPhong(tin, tieuDe), kq: null };
   }
 
   async chot(chatId) {
     await this.zalo.sendTyping(chatId);
-    return this.gui(chatId, await this.tongHop(chatId, `🍱 CHỐT CƠM TRƯA ${this.gioHienTai()}`));
+    const { text, kq } = await this.tongHop(chatId, `🍱 CHỐT CƠM TRƯA ${this.gioHienTai()}`);
+    const daGui = await this.gui(chatId, text);
+    // Nhớ lại để mai không gợi ý trùng
+    if (daGui && kq?.mon_chot) await this.kho.luuChot(chatId, this.homNay(), kq.mon_chot, kq.quan);
+    return daGui;
   }
 
   // ---------- nhận tin bằng getUpdates ----------
@@ -230,12 +258,14 @@ export default {
     const upd = body?.result && typeof body.result === 'object' ? body.result : body;
 
     // Trả 200 ngay để Zalo không gửi lại; xử lý (có gọi Gemini) tiếp trong nền
-    ctx.waitUntil(taoBot(env).xuLyUpdate(upd).catch((e) => console.error('Lỗi xử lý tin:', e)));
+    const bot = taoBot(env);
+    ctx.waitUntil(bot.kho.damBaoLuocDo().then(() => bot.xuLyUpdate(upd)).catch((e) => console.error('Lỗi xử lý tin:', e)));
     return Response.json({ ok: true });
   },
 
   async scheduled(event, env) {
     const bot = taoBot(env);
+    await bot.kho.damBaoLuocDo();
     if (event.cron === CRON_NHAN_TIN) {
       await bot.vongNhanTin(THOI_GIAN_HOI_MS);
       return;
