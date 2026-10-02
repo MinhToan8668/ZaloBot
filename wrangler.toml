@@ -20,6 +20,8 @@ database_id = "a879c067-8a76-43d9-821b-6706db82dcae"
 
 [vars]
 TEN_BOT = "Bot Ngự Trù"
+# Model Gemini. gemini-flash-latest luôn trỏ về bản Flash hiện hành; bị 404/429 thì bot tự thử model dự phòng.
+GEMINI_MODEL = "gemini-flash-latest"
 # Tin nhắn chứa một trong các từ này thì bot trả lời (cách nhau dấu phẩy)
 TU_GOI = "bot,ngự trù"
 # Giờ Việt Nam, phải khớp với crons ở trên. Để GIO_NHAC = "" nếu không muốn nhắc.

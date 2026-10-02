@@ -5,7 +5,7 @@
 ZALO_BOT_TOKEN=
 # Key Gemini: https://aistudio.google.com/apikey . Để trống thì bot chỉ liệt kê tin cuối mỗi người khi chốt.
 GEMINI_API_KEY=
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-flash-latest
 # Chuỗi ngẫu nhiên 8-256 ký tự, tự đặt. Chỉ có tác dụng khi dùng webhook (Worker có tên miền riêng),
 # nhưng vẫn phải có. Tạo nhanh: openssl rand -hex 24
 WEBHOOK_SECRET=

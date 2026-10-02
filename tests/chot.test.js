@@ -79,3 +79,23 @@ test('tiện ích', () => {
   assert.equal(layChu({ candidates: [{ content: { parts: [{ text: 'a' }, { text: 'b' }] } }] }), 'ab');
   assert.equal(layChu({}), '');
 });
+
+test('Gemini tự chuyển model dự phòng khi 404/429', async () => {
+  const { Gemini } = await import('../src/gemini.js');
+  const goi = [];
+  const fetchCu = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    const model = url.match(/models\/([^:]+):/)[1];
+    goi.push(model);
+    if (model === 'model-chet') return new Response('{"error":"gone"}', { status: 404 });
+    if (model === 'gemini-flash-latest') return new Response('{"error":"quota"}', { status: 429 });
+    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'ok ' + model }] } }] }), { status: 200 });
+  };
+  try {
+    const ai = new Gemini('k', 'model-chet');
+    assert.equal(await ai.hoi('hệ thống', 'hỏi'), 'ok gemini-3.5-flash');
+    assert.deepEqual(goi, ['model-chet', 'gemini-flash-latest', 'gemini-3.5-flash']);
+  } finally {
+    globalThis.fetch = fetchCu;
+  }
+});
