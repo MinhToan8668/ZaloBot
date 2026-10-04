@@ -180,3 +180,12 @@ test('11:00 nhắc còn 15 phút, chỉ một lần', async () => {
   const nhac = zalo.daGui.filter(([, t]) => t.includes('Còn 15 phút'));
   assert.equal(nhac.length, 1);
 });
+
+test('cuối tuần không nhắc, không chốt dù cron chạy', async () => {
+  const { bot, zalo, datGio } = tao(aiGia('{}'));
+  await bot.xuLyUpdate(update('g1', 'ăn gì'));
+  datGio(Date.UTC(2026, 9, 4, 3, 30)); // Chủ nhật 4/10/2026 10:30 VN
+  await bot.chayHenGio('10:30');
+  await bot.chayHenGio('11:15');
+  assert.equal(zalo.daGui.length, 0);
+});

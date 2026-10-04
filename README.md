@@ -81,7 +81,7 @@ dừng, lần cron sau tiếp tục. Tin nhắn được trả lời trong vài 
 Cron của Cloudflare tính theo **UTC**, giờ Việt Nam trừ đi 7. Ví dụ muốn nhắc 10:30, nhắc lần 2 lúc 11:15, chốt 11:30:
 
 ```toml
-crons = ["* * * * *", "30 3 * * 1-5", "15 4 * * 1-5", "30 4 * * 1-5"]
+crons = ["* * * * *", "30 3 * * MON-FRI", "15 4 * * MON-FRI", "30 4 * * MON-FRI"]
 GIO_NHAC = "10:30"
 GIO_NHAC_2 = "11:15"
 GIO_CHOT = "11:30"

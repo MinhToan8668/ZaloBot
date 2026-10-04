@@ -34,6 +34,7 @@ export function docCauHinh(env) {
   return {
     muiGio: env.MUI_GIO || 'Asia/Ho_Chi_Minh',
     gioChot: env.GIO_CHOT || '11:15',
+    ngayLam: chot.docDs(env.NGAY_LAM || 'Mon,Tue,Wed,Thu,Fri').map((d) => d.slice(0, 3).toLowerCase()),
     gioNhac: env.GIO_NHAC || '',
     gioNhac2: env.GIO_NHAC_2 || '',
     groupIds: chot.docDs(env.GROUP_IDS),
@@ -221,7 +222,8 @@ export class BotComTrua {
   // ---------- hẹn giờ (cron) ----------
 
   async chayHenGio(gioCron) {
-    const ngay = this.homNay();
+    const { ngay, thu } = chot.gioDiaPhuong(this.bayGio(), this.cfg.muiGio);
+    if (!this.cfg.ngayLam.includes(thu.toLowerCase())) { console.log(`Hôm nay ${thu}, không phải ngày làm việc, bỏ qua`); return; }
     const nhac = this.cfg.gioNhac && chot.khopGio(gioCron, this.cfg.gioNhac);
     const nhac2 = this.cfg.gioNhac2 && chot.khopGio(gioCron, this.cfg.gioNhac2);
     const chotGio = chot.khopGio(gioCron, this.cfg.gioChot);

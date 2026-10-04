@@ -8,10 +8,11 @@ enabled = true
 
 # Cron 1: "* * * * *" mỗi phút hỏi Zalo có tin mới không (giữ nguyên, bot nhận tin nhờ dòng này).
 # Cron 2, 3, 4: nhắc lần 1, nhắc lần 2 (sắp chốt), chốt. Giờ cron là UTC, giờ Việt Nam = UTC + 7:
-#   10:30 VN = "30 3", 11:00 VN = "0 4", 11:15 VN = "15 4". Chỉ thứ Hai đến thứ Sáu (1-5).
+#   10:30 VN = "30 3", 11:00 VN = "0 4", 11:15 VN = "15 4".
+#   Ngày trong tuần: Cloudflare đếm 1 = Chủ nhật (khác cron thường), nên dùng tên MON-FRI cho khỏi nhầm.
 #   Đổi giờ ở đây thì đổi cả GIO_NHAC / GIO_NHAC_2 / GIO_CHOT bên dưới cho khớp.
 [triggers]
-crons = ["* * * * *", "30 3 * * 1-5", "0 4 * * 1-5", "15 4 * * 1-5"]
+crons = ["* * * * *", "30 3 * * MON-FRI", "0 4 * * MON-FRI", "15 4 * * MON-FRI"]
 
 [[d1_databases]]
 binding = "DB"
@@ -30,6 +31,8 @@ GIO_NHAC = "10:30"
 GIO_NHAC_2 = "11:00"
 GIO_CHOT = "11:15"
 MUI_GIO = "Asia/Ho_Chi_Minh"
+# Ngày bot hoạt động (nhắc, chốt), tính theo giờ Việt Nam. Chốt chặn thứ hai ngoài cron ở trên.
+NGAY_LAM = "Mon,Tue,Wed,Thu,Fri"
 # Mã nhóm nhận tin nhắc và tin chốt (gõ /id trong nhóm). Để trống: tự dùng mọi nhóm có người nhắn 7 ngày qua.
 GROUP_IDS = "zgr-e7c577db6cb485eadca5"
 # Mã người được dùng /chot và /nghi (gõ /id). Để trống: ai cũng dùng được.
