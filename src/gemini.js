@@ -1,10 +1,11 @@
 // Gọi Gemini qua REST (generateContent).
 
 const API_GEMINI = 'https://generativelanguage.googleapis.com/v1beta/models/';
-const MA_THU_LAI = new Set([500, 502, 503, 504]);
-// 404: model bị Google tắt; 429: hết quota của model đó -> thử model kế tiếp
-const MA_DOI_MODEL = new Set([404, 429]);
+const MA_THU_LAI = new Set([500, 502, 503]);
+// 404: model bị Google tắt; 429: hết quota; 408/504/524: quá lâu không trả lời -> thử model kế tiếp
+const MA_DOI_MODEL = new Set([404, 429, 408, 504, 524]);
 const SO_LAN_THU = 2;
+const CHO_TOI_DA_MS = 30_000; // một lần gọi Gemini chờ tối đa
 // gemini-flash-latest là bí danh luôn trỏ về bản Flash hiện hành, ít bị "chết" nhất
 export const MODEL_MAC_DINH = 'gemini-flash-latest';
 export const MODEL_DU_PHONG = ['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-3.1-flash-lite'];
@@ -59,9 +60,11 @@ export class Gemini {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-goog-api-key': this._key },
             body,
+            signal: AbortSignal.timeout(CHO_TOI_DA_MS),
           });
         } catch (e) {
           loi = `${model}: lỗi mạng: ${e.name}`;
+          if (e.name === 'TimeoutError') { console.warn('Gemini quá lâu, đổi model:', loi); break; }
           continue;
         }
         if (r.ok) {
