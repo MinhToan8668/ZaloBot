@@ -9,6 +9,7 @@ import { Kho } from './kho.js';
 import { ZaloBot } from './zalo.js';
 
 const GIAN_CACH_TRA_LOI_MS = 5_000;  // tối thiểu giữa hai câu trả lời AI trong cùng nhóm
+const CUA_SO_TRO_CHUYEN_MS = 3 * 60_000; // sau khi bot trả lời, trong chừng này tin không tag vẫn được coi là nói với bot
 const SO_NGAY_NHOM_HOAT_DONG = 7;
 const SO_NGAY_GIU_TIN = 30;
 const CRON_NHAN_TIN = '* * * * *';   // mỗi phút một lần, mỗi lần hỏi Zalo liên tục chừng này lâu:
@@ -117,8 +118,9 @@ export class BotComTrua {
     const moi = await this.kho.luuTin({ chatId, messageId, userId, ten, noiDung: text, luc, ngay });
     if (!moi) return; // Zalo gửi lại tin cũ
 
-    if (daTag || chot.laGoiBot(text, this.cfg.tuGoi) || chat.chat_type === 'PRIVATE') {
-      await this.traLoi(chatId, ten, text);
+    const goiBot = daTag || chot.laGoiBot(text, this.cfg.tuGoi) || chat.chat_type === 'PRIVATE';
+    if (goiBot || await this.kho.dangTroChuyen(chatId, this.bayGio(), CUA_SO_TRO_CHUYEN_MS)) {
+      await this.traLoi(chatId, ten, text, goiBot);
     }
   }
 
@@ -152,19 +154,25 @@ export class BotComTrua {
 
   // ---------- AI ----------
 
-  async traLoi(chatId, ten, text) {
+  async traLoi(chatId, ten, text, goiBot = true) {
     if (!this.ai.sanSang) return;
     if (!(await this.kho.xinTraLoi(chatId, this.bayGio(), GIAN_CACH_TRA_LOI_MS))) return;
     await this.zalo.sendTyping(chatId);
     const [tin, boiCanh] = await Promise.all([this.kho.tinTrongNgay(chatId, this.homNay()), this.boiCanh(chatId)]);
     const noiDung = chot.noiDungGuiAI(tin, this.cfg.muiGio, this.cfg.quanQuen,
-      `Tin nhắn mới nhất, của ${ten}: ${text}\nHãy trả lời tin này.`, boiCanh);
+      `Tin nhắn mới nhất, của ${ten}: ${text}\n${goiBot ? 'Tin này gọi bạn, hãy trả lời.' : 'Tin này KHÔNG tag bạn. Chỉ trả lời nếu nó đang nói tiếp với bạn hoặc cần bạn chốt lại; không thì trả lời đúng một chữ: IM'}`, boiCanh);
     try {
       // Mặc định nhóm đặt ship (gợi ý món); nói "đi ăn ngoài" thì tra Google Maps tìm quán gần công ty
       const cheDo = chot.laDiAnNgoai(text) ? 'ngoai' : 'ship';
       const cau = await this.ai.hoi(chot.heThongTroChuyen(this.cfg.tenBot, this.cfg.gioChot, boiCanh.diaDiem, cheDo), noiDung,
         { banDo: cheDo === 'ngoai' && Boolean(boiCanh.diaDiem) });
-      await this.gui(chatId, chot.boMarkdown(cau));
+      const sach = chot.boMarkdown(cau);
+      if (/^im[.!]?$/i.test(sach)) return;
+      if (await this.gui(chatId, sach)) {
+        // Lưu câu bot vừa nói để lần sau nối mạch
+        const luc = this.bayGio();
+        await this.kho.luuTin({ chatId, messageId: `bot-${luc}`, userId: 'bot', ten: this.cfg.tenBot, noiDung: sach, luc, ngay: this.homNay() });
+      }
     } catch (e) {
       console.error('Gemini lỗi khi trả lời:', e.message);
     }

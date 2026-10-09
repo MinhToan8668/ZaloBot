@@ -81,6 +81,12 @@ export class Kho {
     return (r.meta?.changes ?? 0) > 0;
   }
 
+  // Bot vừa trả lời trong nhóm này chưa lâu? (để nối mạch hội thoại không cần tag)
+  async dangTroChuyen(chatId, bayGio, cuaSoMs) {
+    const r = await this._db.prepare('SELECT lan_tra_loi FROM nhom WHERE chat_id = ?').bind(chatId).first();
+    return Boolean(r?.lan_tra_loi) && bayGio - r.lan_tra_loi <= cuaSoMs;
+  }
+
   async layLich(chatId, ngay) {
     const r = await this._db.prepare(
       'SELECT da_nhac, da_chot, nghi FROM lich WHERE chat_id = ? AND ngay = ?',

@@ -20,6 +20,7 @@ class KhoGia {
   }
   async ghiNhom(chatId, chatType, luc) { this.nhom.set(chatId, { ...(this.nhom.get(chatId) ?? {}), chatType, luc }); }
   async nhomGanDay() { return [...this.nhom].filter(([, v]) => v.chatType === 'GROUP').map(([k]) => k); }
+  async dangTroChuyen(chatId, bayGio, cuaSo) { const n = this.nhom.get(chatId); return Boolean(n?.lanTraLoi) && bayGio - n.lanTraLoi <= cuaSo; }
   async xinTraLoi(chatId, bayGio, gianCach) {
     const n = this.nhom.get(chatId); if (!n) return false;
     if (n.lanTraLoi != null && n.lanTraLoi > bayGio - gianCach) return false;
@@ -188,4 +189,23 @@ test('cuối tuần không nhắc, không chốt dù cron chạy', async () => {
   await bot.chayHenGio('10:30');
   await bot.chayHenGio('11:15');
   assert.equal(zalo.daGui.length, 0);
+});
+
+test('sau khi bot trả lời, tin không tag trong 3 phút vẫn được xử lý; AI nói IM thì im', async () => {
+  const ai = aiGia('Cơm tấm nha');
+  const { bot, zalo, kho, datGio } = tao(ai);
+  await bot.xuLyUpdate(update('g1', 'bot ơi ăn gì'));
+  assert.equal(zalo.daGui.length, 1);
+  assert.ok(kho.tin.some((t) => t.userId === 'bot' && t.noiDung === 'Cơm tấm nha'));
+  datGio(T0 + 60_000);
+  ai.hoi = async () => 'IM';
+  await bot.xuLyUpdate(update('g1', 'tui bận xíu', { luc: T0 + 60_000 }));
+  assert.equal(zalo.daGui.length, 1);
+  datGio(T0 + 120_000);
+  ai.hoi = async () => 'Ok thêm trứng';
+  await bot.xuLyUpdate(update('g1', 'thêm trứng được hông', { luc: T0 + 120_000 }));
+  assert.equal(zalo.daGui.length, 2);
+  datGio(T0 + 20 * 60_000);
+  await bot.xuLyUpdate(update('g1', 'nói chuyện khác', { luc: T0 + 20 * 60_000 }));
+  assert.equal(zalo.daGui.length, 2);
 });
