@@ -38,6 +38,7 @@ export function docCauHinh(env) {
     ngayLam: chot.docDs(env.NGAY_LAM || 'Mon,Tue,Wed,Thu,Fri').map((d) => d.slice(0, 3).toLowerCase()),
     gioNhac: env.GIO_NHAC || '',
     gioNhac2: env.GIO_NHAC_2 || '',
+    gioGiucAn: env.GIO_GIUC_AN || '',
     groupIds: chot.docDs(env.GROUP_IDS),
     adminIds: chot.docDs(env.ADMIN_IDS),
     tenBot,
@@ -204,6 +205,25 @@ export class BotComTrua {
     return daGui;
   }
 
+  // 12h: giục cả nhóm đi ăn bằng câu tếu do AI viết; sau đó mở cửa sổ trò chuyện để ai đáp lại bot còn đáp tiếp
+  async giucAn(chatId) {
+    let cau = chot.CAU_GIUC_AN[Math.floor(Math.random() * chot.CAU_GIUC_AN.length)];
+    if (this.ai.sanSang) {
+      try {
+        const [tin, boiCanh] = await Promise.all([this.kho.tinTrongNgay(chatId, this.homNay()), this.boiCanh(chatId)]);
+        const nd = chot.noiDungGuiAI(tin, this.cfg.muiGio, '', 'Bây giờ là 12h trưa. Viết câu giục đi ăn.', boiCanh);
+        cau = chot.boMarkdown(await this.ai.hoi(chot.heThongGiucAn(this.cfg.tenBot), nd, { nhietDo: 0.9 })) || cau;
+      } catch (e) {
+        console.error('AI không viết được câu giục ăn, dùng câu sẵn:', e.message);
+      }
+    }
+    if (await this.gui(chatId, cau)) {
+      const luc = this.bayGio();
+      await this.kho.xinTraLoi(chatId, luc, 0); // mở cửa sổ nối mạch
+      await this.kho.luuTin({ chatId, messageId: `bot-${luc}`, userId: 'bot', ten: this.cfg.tenBot, noiDung: cau, luc, ngay: this.homNay() });
+    }
+  }
+
   // ---------- nhận tin bằng getUpdates ----------
 
   // Hỏi Zalo liên tục trong `hanMs` mili giây rồi dừng, để lần cron sau tiếp tục.
@@ -235,7 +255,8 @@ export class BotComTrua {
     const nhac = this.cfg.gioNhac && chot.khopGio(gioCron, this.cfg.gioNhac);
     const nhac2 = this.cfg.gioNhac2 && chot.khopGio(gioCron, this.cfg.gioNhac2);
     const chotGio = chot.khopGio(gioCron, this.cfg.gioChot);
-    if (!nhac && !nhac2 && !chotGio) { console.warn(`Cron chạy lúc ${gioCron} không khớp GIO_NHAC/GIO_NHAC_2/GIO_CHOT`); return; }
+    const giucAn = this.cfg.gioGiucAn && chot.khopGio(gioCron, this.cfg.gioGiucAn);
+    if (!nhac && !nhac2 && !chotGio && !giucAn) { console.warn(`Cron chạy lúc ${gioCron} không khớp giờ nào trong cấu hình`); return; }
 
     for (const chatId of await this.nhomDich()) {
       try {
@@ -248,6 +269,9 @@ export class BotComTrua {
         }
         if (chotGio && await this.kho.gianhViec(chatId, ngay, 'da_chot')) {
           await this.chot(chatId);
+        }
+        if (giucAn && await this.kho.gianhViec(chatId, ngay, 'giuc_an')) {
+          await this.giucAn(chatId);
         }
       } catch (e) {
         console.error(`Lỗi hẹn giờ ở nhóm ${chatId}:`, e.message);

@@ -45,7 +45,7 @@ function tao(ai, env = {}) {
   const zalo = zaloGia();
   const kho = new KhoGia();
   let gio = T0;
-  const bot = new BotComTrua(docCauHinh({ GIO_NHAC: '10:30', GIO_NHAC_2: '11:00', ...env }), zalo, ai, kho, () => gio);
+  const bot = new BotComTrua(docCauHinh({ GIO_NHAC: '10:30', GIO_NHAC_2: '11:00', GIO_GIUC_AN: '12:00', ...env }), zalo, ai, kho, () => gio);
   return { bot, zalo, kho, datGio: (ms) => { gio = ms; } };
 }
 
@@ -208,4 +208,18 @@ test('sau khi bot trả lời, tin không tag trong 3 phút vẫn được xử 
   datGio(T0 + 20 * 60_000);
   await bot.xuLyUpdate(update('g1', 'nói chuyện khác', { luc: T0 + 20 * 60_000 }));
   assert.equal(zalo.daGui.length, 2);
+});
+
+test('12:00 giục đi ăn một lần, sau đó tin không tag vẫn được trả lời', async () => {
+  const ai = aiGia('Đi ăn chưa mấy bà lọi 🍚');
+  const { bot, zalo, datGio } = tao(ai);
+  await bot.xuLyUpdate(update('g1', 'ăn gì'));
+  datGio(Date.UTC(2026, 9, 2, 5, 0));
+  await bot.chayHenGio('12:00');
+  await bot.chayHenGio('12:01');
+  assert.equal(zalo.daGui.filter(([, t]) => t.includes('bà lọi')).length, 1);
+  ai.hoi = async () => 'Ăn lẹ rồi ngủ nha';
+  datGio(Date.UTC(2026, 9, 2, 5, 1));
+  await bot.xuLyUpdate(update('g1', 'ăn rồi nè', { luc: Date.UTC(2026, 9, 2, 5, 1) }));
+  assert.equal(zalo.daGui.at(-1)[1], 'Ăn lẹ rồi ngủ nha');
 });

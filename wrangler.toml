@@ -12,7 +12,7 @@ enabled = true
 #   Ngày trong tuần: Cloudflare đếm 1 = Chủ nhật (khác cron thường), nên dùng tên MON-FRI cho khỏi nhầm.
 #   Đổi giờ ở đây thì đổi cả GIO_NHAC / GIO_NHAC_2 / GIO_CHOT bên dưới cho khớp.
 [triggers]
-crons = ["* * * * *", "30 3 * * MON-FRI", "0 4 * * MON-FRI", "15 4 * * MON-FRI"]
+crons = ["* * * * *", "30 3 * * MON-FRI", "0 4 * * MON-FRI", "15 4 * * MON-FRI", "0 5 * * MON-FRI"]
 
 [[d1_databases]]
 binding = "DB"
@@ -30,6 +30,8 @@ GIO_NHAC = "10:30"
 # Nhắc lần 2 "còn X phút nữa chốt". Để "" nếu không cần.
 GIO_NHAC_2 = "11:00"
 GIO_CHOT = "11:15"
+# 12:00 VN = "0 5" UTC: giục cả nhóm đứng dậy đi ăn (câu tếu do AI viết). Để "" nếu không cần.
+GIO_GIUC_AN = "12:00"
 MUI_GIO = "Asia/Ho_Chi_Minh"
 # Ngày bot hoạt động (nhắc, chốt), tính theo giờ Việt Nam. Chốt chặn thứ hai ngoài cron ở trên.
 NGAY_LAM = "Mon,Tue,Wed,Thu,Fri"

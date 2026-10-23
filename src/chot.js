@@ -17,6 +17,21 @@ Quy tắc:
 Trả về đúng một JSON theo dạng:
 {"mon_chot": "", "quan": "", "ly_do": "", "dat_rieng": [{"ten": "", "mon": "", "ghi_chu": ""}], "khong_an": [], "chua_ro": []}`;
 
+// Câu giục đi ăn lúc 12h khi AI lỗi: chọn ngẫu nhiên
+export const CAU_GIUC_AN = [
+  'Đi ăn chưa mấy bà lọi, gỡ lá bùa ra khỏi trán đi, không thấy đói hả?',
+  'Đi lấy đồ ăn chưa? Có đồ rồi sao còn ngồi đó, thích ăn đồ nguội à?',
+  'Không lo ăn còn đi ngủ sớm, 12h rồi đó mấy má.',
+  'Shipper tới rồi mà ngồi ngáp hoài, đứng dậy đi ăn coi!',
+  'Cơm nguội ngắt rồi kìa, lo cày hoài ai nuôi?',
+];
+
+export function heThongGiucAn(tenBot) {
+  return `Bạn là "${tenBot}", đồng nghiệp lầy lội trong nhóm Zalo cơm trưa. 12h trưa, nhiệm vụ: viết MỘT câu (tối đa 2 câu ngắn) giục cả nhóm đứng dậy đi ăn / đi lấy đồ ăn đã đặt.
+Giọng: cà khịa thân thiện kiểu miền Nam, như mấy câu này: "Đi ăn chưa mấy bà lọi, gỡ lá bùa ra khỏi trán đi, không thấy đói hả?", "Đi lấy đồ ăn chưa, có đồ ăn rồi sao còn ngồi đó, thích ăn đồ nguội à?", "Không lo ăn còn đi ngủ sớm".
+Đừng chép lại nguyên văn, hãy biến tấu mới mỗi ngày, có thể bám vào món đã chốt hôm nay hoặc chuyện trong chat. Không markdown, tối đa 1 emoji, không mở bài.`;
+}
+
 // Nhóm muốn đi ăn tại quán (thay vì đặt ship) không?
 export function laDiAnNgoai(text) {
   return /(đi|ra|xuống)\s+ăn|ăn\s+(ngoài|tại\s+quán|tại\s+chỗ|ở\s+quán)|ra\s+ngoài|quán\s+(gần|quanh)|gần\s+(đây|công\s*ty|văn\s*phòng|chỗ)|quanh\s+(đây|công\s*ty|văn\s*phòng)|đi\s+bộ/i.test(String(text ?? ''));
