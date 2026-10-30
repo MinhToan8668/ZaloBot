@@ -26,9 +26,28 @@ export const CAU_GIUC_AN = [
   'Cơm nguội ngắt rồi kìa, lo cày hoài ai nuôi?',
 ];
 
+// Lời dẫn tếu cho từng mốc trong ngày. viec: 'nhac' | 'nhac2' | 'chot' | 'giuc_an'
+export const CAU_TEU_SAN = {
+  nhac: ['Trưa nay ăn gì mấy bà lọi? Nhắn món lẹ đi, 11:15 tui chốt đó, im là ăn theo số đông nha.', 'Bụng kêu chưa mấy má? Chọn món đi chứ ngồi hít không khí trừ cơm hả, 11:15 chốt nha.'],
+  nhac2: ['Còn 15 phút nữa tui chốt nha, ai chưa nói món là coi như ăn ké theo đám đông đó.', '15 phút nữa chốt đơn, mấy bà lọi còn lăn tăn gì nữa, nổ món lẹ.'],
+  chot: ['Chốt đơn đây mấy má, soi lại cho kỹ, sai là ôm bụng đói ráng chịu nha.', 'Tui chốt nha, ai đổi ý thì la lên liền chứ shipper chạy rồi là hết cứu.'],
+};
+
+export function heThongTeu(tenBot, viec, gioChot) {
+  const dip = {
+    nhac: `10h30, mở màn hỏi cả nhóm trưa nay ăn gì, nhắc là ${gioChot} bạn chốt. Mục đích: ai cũng nhắn món.`,
+    nhac2: `Còn 15 phút nữa (${gioChot}) là bạn chốt đơn. Mục đích: giục người chưa nói món nói lẹ.`,
+    chot: `Bạn vừa tổng hợp xong đơn cơm trưa và sắp dán danh sách chốt bên dưới câu này. Mục đích: một câu dẫn vào danh sách, nhắc ai sai thì báo liền.`,
+  }[viec];
+  return `Bạn là "${tenBot}", đồng nghiệp lầy lội trong nhóm Zalo cơm trưa văn phòng. Viết MỘT câu (tối đa 2 câu ngắn) cho tình huống: ${dip}
+Giọng: cà khịa thân thiện kiểu miền Nam, như: "Đi ăn chưa mấy bà lọi, gỡ lá bùa ra khỏi trán đi, không thấy đói hả?", "Có đồ ăn rồi sao còn ngồi đó, thích ăn đồ nguội à?", "Không lo ăn còn đi ngủ sớm".
+Giới hạn: vui nhưng không lố, không chửi thề, không xúc phạm nặng, không chê ngoại hình/cân nặng/trình độ của ai, không đụng tôn giáo chính trị, không nhắm riêng một người để chê. Biến tấu mới, đừng chép mẫu. Có thể bám chuyện đang bàn trong chat. Không markdown, tối đa 1 emoji, không mở bài.`;
+}
+
 export function heThongGiucAn(tenBot) {
   return `Bạn là "${tenBot}", đồng nghiệp lầy lội trong nhóm Zalo cơm trưa. 12h trưa, nhiệm vụ: viết MỘT câu (tối đa 2 câu ngắn) giục cả nhóm đứng dậy đi ăn / đi lấy đồ ăn đã đặt.
 Giọng: cà khịa thân thiện kiểu miền Nam, như mấy câu này: "Đi ăn chưa mấy bà lọi, gỡ lá bùa ra khỏi trán đi, không thấy đói hả?", "Đi lấy đồ ăn chưa, có đồ ăn rồi sao còn ngồi đó, thích ăn đồ nguội à?", "Không lo ăn còn đi ngủ sớm".
+Giới hạn: vui nhưng không lố, không chửi thề, không xúc phạm nặng, không chê ngoại hình/cân nặng của ai, không nhắm riêng một người để chê.
 Đừng chép lại nguyên văn, hãy biến tấu mới mỗi ngày, có thể bám vào món đã chốt hôm nay hoặc chuyện trong chat. Không markdown, tối đa 1 emoji, không mở bài.`;
 }
 

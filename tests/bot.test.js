@@ -69,7 +69,6 @@ test('cron 10:30 nhắc, không chốt; /nghi thì không tự chốt', async ()
   await bot.xuLyUpdate(update('g1', 'ăn gì'));
   await bot.chayHenGio('10:30');
   assert.equal(zalo.daGui.length, 1);
-  assert.ok(zalo.daGui[0][1].includes('11:15 bot chốt'));
   await bot.xuLyUpdate(update('g1', '/nghi'));
   await bot.chayHenGio('11:15');
   assert.equal(zalo.daGui.filter(([, t]) => t.includes('CHỐT')).length, 0);
@@ -178,7 +177,7 @@ test('11:00 nhắc còn 15 phút, chỉ một lần', async () => {
   await bot.xuLyUpdate(update('g1', 'ăn gì'));
   await bot.chayHenGio('11:00');
   await bot.chayHenGio('11:01');
-  const nhac = zalo.daGui.filter(([, t]) => t.includes('Còn 15 phút'));
+  const nhac = zalo.daGui.filter(([, t]) => t.startsWith('⏰'));
   assert.equal(nhac.length, 1);
 });
 

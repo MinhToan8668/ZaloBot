@@ -198,11 +198,26 @@ export class BotComTrua {
 
   async chot(chatId) {
     await this.zalo.sendTyping(chatId);
-    const { text, kq } = await this.tongHop(chatId, `🍱 CHỐT CƠM TRƯA ${this.gioHienTai()}`);
-    const daGui = await this.gui(chatId, text);
+    const [{ text, kq }, dan] = await Promise.all([this.tongHop(chatId, `🍱 CHỐT CƠM TRƯA ${this.gioHienTai()}`), this.cauTeu(chatId, 'chot')]);
+    const daGui = await this.gui(chatId, `${dan}\n\n${text}`);
     // Nhớ lại để mai không gợi ý trùng
     if (daGui && kq?.mon_chot) await this.kho.luuChot(chatId, this.homNay(), kq.mon_chot, kq.quan);
     return daGui;
+  }
+
+  // Câu dẫn tếu cho một mốc trong ngày; AI lỗi thì lấy câu sẵn
+  async cauTeu(chatId, viec) {
+    const san = chot.CAU_TEU_SAN[viec];
+    const duPhong = san[Math.floor(Math.random() * san.length)];
+    if (!this.ai.sanSang) return duPhong;
+    try {
+      const [tin, boiCanh] = await Promise.all([this.kho.tinTrongNgay(chatId, this.homNay()), this.boiCanh(chatId)]);
+      const nd = chot.noiDungGuiAI(tin, this.cfg.muiGio, '', 'Viết câu cho tình huống đã nêu.', boiCanh);
+      return chot.boMarkdown(await this.ai.hoi(chot.heThongTeu(this.cfg.tenBot, viec, this.cfg.gioChot), nd, { nhietDo: 0.9 })) || duPhong;
+    } catch (e) {
+      console.error(`AI không viết được câu ${viec}, dùng câu sẵn:`, e.message);
+      return duPhong;
+    }
   }
 
   // 12h: giục cả nhóm đi ăn bằng câu tếu do AI viết; sau đó mở cửa sổ trò chuyện để ai đáp lại bot còn đáp tiếp
@@ -261,11 +276,10 @@ export class BotComTrua {
     for (const chatId of await this.nhomDich()) {
       try {
         if (nhac && await this.kho.gianhViec(chatId, ngay, 'da_nhac')) {
-          await this.gui(chatId, `Trưa nay ăn gì mọi người ơi? 🍚 Nhắn món muốn ăn nha, ${this.cfg.gioChot} bot chốt.`);
+          await this.gui(chatId, await this.cauTeu(chatId, 'nhac'));
         }
         if (nhac2 && await this.kho.gianhViec(chatId, ngay, 'nhac2')) {
-          const conPhut = chot.phutGiua(this.cfg.gioNhac2, this.cfg.gioChot);
-          await this.gui(chatId, `⏰ Còn ${conPhut} phút nữa (${this.cfg.gioChot}) bot chốt cơm. Ai chưa chọn món thì nhắn liền nha!`);
+          await this.gui(chatId, `⏰ ${await this.cauTeu(chatId, 'nhac2')}`);
         }
         if (chotGio && await this.kho.gianhViec(chatId, ngay, 'da_chot')) {
           await this.chot(chatId);
