@@ -142,6 +142,15 @@ export class BotComTrua {
         return this.gui(chatId, `Mã cuộc trò chuyện này: ${chatId}\nMã của bạn: ${userId}`);
       case 'tinhhinh':
         return this.gui(chatId, (await this.tongHop(chatId, `Tình hình đến ${this.gioHienTai()} (chưa chốt)`)).text);
+      case 'thu': {
+        // Xem thử câu của một mốc giờ: /thu nhac | nhac2 | chot | giuc
+        if (!this.laAdmin(userId)) return this.gui(chatId, 'Lệnh này chỉ người phụ trách đặt cơm dùng được nha.');
+        const moc = phanCon.trim().toLowerCase();
+        if (moc === 'giuc') return this.giucAn(chatId);
+        if (moc === 'chot') return this.chot(chatId);
+        if (moc === 'nhac' || moc === 'nhac2') return this.gui(chatId, (moc === 'nhac2' ? '⏰ ' : '') + await this.cauTeu(chatId, moc));
+        return this.gui(chatId, 'Gõ: /thu nhac | /thu nhac2 | /thu chot | /thu giuc');
+      }
       case 'chot': case 'nghi': {
         if (!this.laAdmin(userId)) return this.gui(chatId, 'Lệnh này chỉ người phụ trách đặt cơm dùng được nha.');
         if (lenh === 'chot') return this.chot(chatId);
