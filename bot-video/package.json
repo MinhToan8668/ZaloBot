@@ -1,0 +1,16 @@
+{
+  "name": "bot-nhac-video",
+  "version": "1.0.0",
+  "description": "Bot Zalo giữ kỷ luật đăng video mỗi tuần cho nhóm học viên, chạy trên Cloudflare Workers",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute bot-video --remote --file=schema.sql",
+    "test": "node --no-warnings --test tests/*.test.js"
+  },
+  "devDependencies": {
+    "wrangler": "^4"
+  }
+}

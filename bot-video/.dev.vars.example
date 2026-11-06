@@ -1,0 +1,3 @@
+# Sao chép thành .dev.vars để chạy `npm run dev`. KHÔNG commit .dev.vars.
+# Token bot Zalo MỚI (tạo bot riêng trong Zalo Bot Manager, đừng dùng chung token với bot cơm trưa).
+ZALO_BOT_TOKEN=

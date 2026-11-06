@@ -1,0 +1,35 @@
+name = "bot-nhac-video"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+[observability]
+enabled = true
+
+# Một cron duy nhất, mỗi phút: hỏi Zalo tin mới và tự xem đã tới giờ nhắc / tổng kết chưa.
+# Giờ nhắc, giờ tổng kết đặt bằng LICH_NHAC, GIO_TONG_KET bên dưới (giờ Việt Nam), không cần sửa cron.
+[triggers]
+crons = ["* * * * *"]
+
+# Tạo database: npx wrangler d1 create bot-video  rồi dán database_id vào đây.
+[[d1_databases]]
+binding = "DB"
+database_name = "bot-video"
+database_id = "DIEN-DATABASE-ID-VAO-DAY"
+
+[vars]
+TEN_BOT = "Bot Kỷ Luật Video"
+MUI_GIO = "Asia/Ho_Chi_Minh"
+# Mã nhóm học viên (thêm bot vào nhóm, gõ /id). Để trống thì bot chỉ trả lời /id.
+GROUP_ID = ""
+# Mã Zalo của admin (gõ /id), nhiều người cách nhau dấu phẩy. Để trống thì không ai dùng được lệnh admin.
+ADMIN_IDS = ""
+# Tuần đầu tiên bắt đầu tính luật (ngày bất kỳ trong tuần đó, bot tự lấy thứ Hai).
+NGAY_BAT_DAU = "2026-11-09"
+# Các mốc nhắc người chưa nộp, giờ Việt Nam: Mon Tue Wed Thu Fri Sat Sun + HH:MM, cách nhau dấu phẩy. Để "" nếu không nhắc.
+LICH_NHAC = "Thu 20:00,Sat 20:00,Sun 20:00"
+# Giờ đăng tổng kết tuần vừa xong (kèm danh sách cảnh báo, mời ra).
+GIO_TONG_KET = "Mon 08:00"
+# Thiếu bao nhiêu tuần liên tiếp thì bị mời ra khỏi nhóm.
+SO_TUAN_KICK = "2"
+
+# Bí mật KHÔNG để ở đây. Đặt bằng: npx wrangler secret put ZALO_BOT_TOKEN

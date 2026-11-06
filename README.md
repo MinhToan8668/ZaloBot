@@ -1,5 +1,7 @@
 # Bot Zalo chốt cơm trưa (Cloudflare Workers)
 
+> Repo này còn có **bot kỷ luật đăng video** cho nhóm học viên, nằm riêng trong [`bot-video/`](bot-video/README.md).
+
 Bot ngồi trong nhóm Zalo đặt cơm trưa của công ty, chạy hoàn toàn trên Cloudflare
 (gói Free, không cần VPS, không cần tên miền):
 
